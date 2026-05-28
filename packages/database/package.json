@@ -1,0 +1,18 @@
+{
+  "name": "database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Database boundary package for Birth Chart Generator.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
