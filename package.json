@@ -1,0 +1,27 @@
+{
+  "name": "birth-chart-generator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.34.4+sha512.8768be55200ae3f2226b6527fcca2687e14bc4e5f12d7721a0f25da3df47915177058648db4177baf348120fa0ba2752d8d8d93f6beaf1fe64ae18da8de961af"
+}
