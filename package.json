@@ -1,12 +1,26 @@
 {
   "name": "birth-chart-generator",
   "version": "0.1.0",
+  "description": "Production Next.js app for birth chart generation.",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "type-check": "tsc --noEmit && pnpm --filter database type-check",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "docker:prod": "docker compose -f infrastructure/docker/docker-compose.prod.yml up -d",
+    "docker:prod:down": "docker compose -f infrastructure/docker/docker-compose.prod.yml down",
+    "docker:prod:logs": "docker compose -f infrastructure/docker/docker-compose.prod.yml logs -f app",
+    "prepare": "husky"
   },
   "dependencies": {
     "next": "16.2.10",
@@ -18,10 +32,15 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   },
   "packageManager": "pnpm@10.34.4+sha512.8768be55200ae3f2226b6527fcca2687e14bc4e5f12d7721a0f25da3df47915177058648db4177baf348120fa0ba2752d8d8d93f6beaf1fe64ae18da8de961af"
 }
