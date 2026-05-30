@@ -35,6 +35,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# SOPS age encryption key
+.age-key.txt
+age-key.txt
+
 # vercel
 .vercel
 

@@ -8,4 +8,6 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+.age-key.txt
+age-key.txt
 *.tsbuildinfo
