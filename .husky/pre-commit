@@ -1,3 +1,4 @@
+pnpm db:check-migration
 pnpm exec lint-staged
 pnpm type-check
 pnpm test:unit

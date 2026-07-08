@@ -25,3 +25,4 @@ Rules for the Prisma workspace package. Read after the root [AGENTS.md](../../AG
 2. Run `pnpm db:generate` from the repo root.
 3. Run `pnpm db:migrate` for development migrations or `pnpm db:deploy` for production migration deploys.
 4. Commit schema and migration changes together.
+5. The pre-commit hook runs `pnpm db:check-migration` and blocks staged schema changes without a staged `migration.sql`.
