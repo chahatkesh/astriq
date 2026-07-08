@@ -3,6 +3,7 @@
 .pnpm-store
 coverage
 node_modules
+packages/database/generated
 npm-debug.log*
 pnpm-debug.log*
 .env
@@ -10,4 +11,5 @@ pnpm-debug.log*
 !.env.example
 .age-key.txt
 age-key.txt
+mprocs.local.yaml
 *.tsbuildinfo

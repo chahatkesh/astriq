@@ -5,7 +5,7 @@ Rules for one-shot scripts. Long-running daemons belong in [workers/](../workers
 ## What belongs here
 
 - CI checks, deployment helpers, local setup commands, seed scripts, and backfills.
-- Scripts should do one job and exit.
+- Scripts should do one job and exit, except local tooling supervisors such as [start-dev-database.ts](start-dev-database.ts) that foreground external development services.
 
 ## Pattern
 

@@ -1,15 +1,27 @@
 # packages/database/AGENTS.md
 
-Rules for the database workspace package.
+Rules for the Prisma workspace package. Read after the root [AGENTS.md](../../AGENTS.md).
 
-## Purpose
+## What belongs here
 
-- Keep schema, migrations, database clients, and database-specific types out of the root app.
-- Export a small, stable API from `src/index.ts`.
+- The Prisma schema in [packages/database/prisma/schema.prisma](prisma/schema.prisma).
+- Migrations in [packages/database/prisma/migrations/](prisma/migrations/).
+- The seed in [packages/database/prisma/seed.ts](prisma/seed.ts).
+- Generated Prisma client output in `packages/database/generated/`.
+- A small `src/` surface for database helpers and the shared Prisma client export.
 
-## Boundaries
+## Hard rules
 
+- Never edit `packages/database/generated/` by hand. It is rewritten by `pnpm db:generate` and remains gitignored.
+- Never run Prisma operations from another package. Root database scripts must delegate to this package with `pnpm --filter database ...`.
 - Do not import from `app/`, `components/`, or React code.
-- Keep database clients lazily initialized. `next build` must not require live runtime secrets.
+- App and service code should use [lib/db.ts](../../lib/db.ts), not generated Prisma paths.
 - Add package tests under [tests/unit/packages/database/](../../tests/unit/packages/database/).
-- This package tracks production and local/test contracts only. Do not add staging-specific scripts or environment names.
+- This package tracks local/test and production contracts only. Do not add staging-specific scripts, env names, secrets, or migrations.
+
+## Workflow
+
+1. Edit [schema.prisma](prisma/schema.prisma).
+2. Run `pnpm db:generate` from the repo root.
+3. Run `pnpm db:migrate` for development migrations or `pnpm db:deploy` for production migration deploys.
+4. Commit schema and migration changes together.
