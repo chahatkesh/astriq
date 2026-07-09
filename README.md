@@ -10,7 +10,7 @@ Production Next.js app for birth chart generation.
 - `scripts/`: one-shot operational scripts
 - `packages/database/`: database package boundary
 - `tests/`: root app and package tests
-- `infrastructure/`: production Docker and nginx contracts
+- `infrastructure/`: local Docker, production Docker, and nginx contracts
 - `secrets/`: secret handling guidance
 - `docs/`: internal engineering docs
 
@@ -20,6 +20,7 @@ There are no landing or documentation apps, and no staging runtime.
 
 ```bash
 pnpm dev
+pnpm docker:dev
 pnpm lint
 pnpm type-check
 pnpm test:unit
@@ -28,4 +29,4 @@ pnpm build
 
 ## Production
 
-Production runtime contracts live in [infrastructure/](infrastructure/). The app exposes `/api/health` for deployment checks.
+Local and production runtime contracts live in [infrastructure/](infrastructure/). The app exposes `/api/health` for deployment checks.

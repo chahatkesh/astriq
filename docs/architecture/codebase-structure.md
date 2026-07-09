@@ -13,10 +13,10 @@ This repo follows a production-focused structure with one main app and one produ
 - `scripts/`: One-shot local, CI, and production helper scripts.
 - `packages/database/`: Database schema/client boundary.
 - `tests/`: Root app and package tests.
-- `infrastructure/`: Production Docker and reverse proxy contracts.
+- `infrastructure/`: Local Docker, production Docker, and reverse proxy contracts.
 - `secrets/`: Secret handling guidance only. Plaintext secrets are never committed.
 - `docs/`: Internal engineering guidance.
 
 ## Environment policy
 
-Supported runtime environments are `development`, `test`, and `production`. Staging is intentionally not modeled in this codebase.
+Supported runtime environments are `development`, `test`, and `production`. Local Docker is for development dependencies; staging is intentionally not modeled in this codebase.
