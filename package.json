@@ -23,6 +23,11 @@
     "docker:prod": "docker compose -f infrastructure/docker/docker-compose.prod.yml up -d",
     "docker:prod:down": "docker compose -f infrastructure/docker/docker-compose.prod.yml down",
     "docker:prod:logs": "docker compose -f infrastructure/docker/docker-compose.prod.yml logs -f app",
+    "secrets:decrypt": "SOPS_AGE_KEY_FILE=.age-key.txt make decrypt-local",
+    "secrets:decrypt:production": "SOPS_AGE_KEY_FILE=.age-key.txt make decrypt-production",
+    "secrets:edit": "SOPS_AGE_KEY_FILE=.age-key.txt make edit-local",
+    "secrets:edit:production": "SOPS_AGE_KEY_FILE=.age-key.txt make edit-production",
+    "secrets:updatekeys": "SOPS_AGE_KEY_FILE=.age-key.txt make update-secret-keys",
     "prepare": "husky"
   },
   "dependencies": {

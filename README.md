@@ -21,6 +21,7 @@ There are no landing or documentation apps, and no staging runtime.
 ```bash
 pnpm dev
 pnpm docker:dev
+pnpm secrets:decrypt
 pnpm lint
 pnpm type-check
 pnpm test:unit
@@ -30,3 +31,5 @@ pnpm build
 ## Production
 
 Local and production runtime contracts live in [infrastructure/](infrastructure/). The app exposes `/api/health` for deployment checks.
+
+Encrypted local and production environment files live in [secrets/](secrets/). See [SOPS secret management](docs/setup/secrets/sops-secret-management.md) for age key generation and daily commands.
