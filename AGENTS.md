@@ -16,6 +16,7 @@ This repo follows a production-focused structure with one main app and one produ
 - Shared UI belongs in `components/`, hooks in `hooks/`, reusable helpers in `lib/`, business logic in `services/`, long-running daemons in `workers/`, and one-shot utilities in `scripts/`.
 - Database-specific schema/client code belongs in `packages/database/`.
 - Root app tests live in `tests/unit/app/`; package tests live in `tests/unit/packages/`.
+- Claude Code repo rules live in `.claude/`; keep them aligned with these instructions when workflow policy changes.
 
 ## Runtime
 
