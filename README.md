@@ -19,8 +19,11 @@ There are no landing or documentation apps, and no staging runtime.
 ## Commands
 
 ```bash
+pnpm dev:procs
 pnpm dev
 pnpm docker:dev
+pnpm db:generate
+pnpm db:migrate
 pnpm secrets:decrypt
 pnpm lint
 pnpm type-check

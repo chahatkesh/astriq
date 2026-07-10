@@ -39,6 +39,9 @@ yarn-error.log*
 .age-key.txt
 age-key.txt
 
+# local process manager overrides
+mprocs.local.yaml
+
 # vercel
 .vercel
 

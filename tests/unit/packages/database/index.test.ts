@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getDatabaseConfig } from "@/packages/database/src";
+import {
+  getDatabaseConfig,
+  getPrismaDatabaseUrl,
+} from "@/packages/database/src";
 
 describe("getDatabaseConfig", () => {
   it("marks the database as unconfigured without DATABASE_URL", () => {
@@ -22,6 +25,18 @@ describe("getDatabaseConfig", () => {
       ssl: true,
       isConfigured: true,
     });
+  });
+
+  it("falls back to the local Docker URL outside production", () => {
+    expect(getPrismaDatabaseUrl({ APP_ENV: "development" })).toBe(
+      "postgresql://postgres:postgres@localhost:5432/birth_chart_generator_dev",
+    );
+  });
+
+  it("requires DATABASE_URL for the production Prisma client", () => {
+    expect(() => getPrismaDatabaseUrl({ APP_ENV: "production" })).toThrow(
+      /DATABASE_URL is required/,
+    );
   });
 
   it("rejects staging as a runtime contract", () => {

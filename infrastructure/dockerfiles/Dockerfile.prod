@@ -35,6 +35,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV APP_ENV=production
 ENV NEXT_PUBLIC_APP_NAME="Birth Chart Generator"
 
+RUN pnpm db:generate
 RUN pnpm build
 
 FROM base AS runner
