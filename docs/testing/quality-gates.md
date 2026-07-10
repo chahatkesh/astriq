@@ -12,3 +12,6 @@ pnpm build
 ```
 
 Husky runs migration checks, lint-staged, type-checking, and unit tests before commits.
+
+Kundli-specific ephemeris fixture guidance lives in
+[Kundli reference accuracy](kundli-reference-accuracy.md).

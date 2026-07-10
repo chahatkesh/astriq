@@ -44,6 +44,9 @@ int main() {
 
   const kundli::BirthChart chart = kundli::calculateBirthChart(sampleInput());
   assert(chart.metadata.utcIso == "2000-01-01T12:00:00.000Z");
+  assert(chart.metadata.calculationProfile.id == "vedic-lahiri-prototype-v1");
+  assert(chart.metadata.calculationProfile.precision == "prototype");
+  assert(chart.metadata.calculationProfile.nodeModel == "Mean lunar nodes");
   assert(chart.metadata.ayanamsha == "lahiri");
   assert(chart.metadata.houseSystem == "whole_sign");
   assert(chart.houses.size() == 12);

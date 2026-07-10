@@ -56,8 +56,23 @@ export type KundliHouse = {
   planets: string[];
 };
 
+export type CalculationPrecision = "prototype" | "reference";
+
+export type CalculationProfile = {
+  id: string;
+  label: string;
+  precision: CalculationPrecision;
+  ephemeris: string;
+  planetPositionSource: string;
+  ayanamshaModel: string;
+  houseModel: string;
+  nodeModel: string;
+  expectedTolerance: string;
+};
+
 export type BirthChartMetadata = {
   engineVersion: string;
+  calculationProfile: CalculationProfile;
   ayanamsha: AyanamshaMode;
   ayanamshaDegrees: number;
   zodiac: "sidereal";

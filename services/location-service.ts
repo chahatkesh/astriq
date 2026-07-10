@@ -84,29 +84,32 @@ export function resolveTimeZoneOffsetMinutes(
     0,
     0,
   );
+  const matchingOffsets = getMatchingOffsets(
+    localTimestamp,
+    localParts,
+    timeZone,
+  );
 
-  let candidateUtc = localTimestamp;
-  let offsetMinutes = getOffsetForInstant(candidateUtc, timeZone);
-
-  for (let i = 0; i < 4; i += 1) {
-    candidateUtc = localTimestamp - offsetMinutes * 60_000;
-    const nextOffset = getOffsetForInstant(candidateUtc, timeZone);
-
-    if (nextOffset === offsetMinutes) {
-      break;
-    }
-
-    offsetMinutes = nextOffset;
+  if (matchingOffsets.length === 1) {
+    return matchingOffsets[0] as number;
   }
 
-  const resolvedParts = getPartsInTimeZone(candidateUtc, timeZone);
-  if (!sameWallClock(localParts, resolvedParts)) {
+  if (matchingOffsets.length > 1) {
+    throw new Error(
+      "The local birth time is ambiguous in that time zone because the clock changed. Enable manual UTC offset and choose the recorded offset.",
+    );
+  }
+
+  const fallbackOffset = getOffsetForInstant(localTimestamp, timeZone);
+  const fallbackUtc = localTimestamp - fallbackOffset * 60_000;
+  const fallbackParts = getPartsInTimeZone(fallbackUtc, timeZone);
+  if (!sameWallClock(localParts, fallbackParts)) {
     throw new Error(
       "The local birth time does not exist in that time zone, likely because of a daylight-saving transition.",
     );
   }
 
-  return offsetMinutes;
+  return fallbackOffset;
 }
 
 export function isValidTimeZone(timeZone: string) {
@@ -208,6 +211,28 @@ function getPartsInTimeZone(instantMs: number, timeZone: string): DateParts {
     hour: Number(parts.hour),
     minute: Number(parts.minute),
   };
+}
+
+function getMatchingOffsets(
+  localTimestamp: number,
+  localParts: DateParts,
+  timeZone: string,
+) {
+  const candidateOffsets = new Set<number>();
+
+  for (let minutes = -36 * 60; minutes <= 36 * 60; minutes += 30) {
+    candidateOffsets.add(
+      getOffsetForInstant(localTimestamp + minutes * 60_000, timeZone),
+    );
+  }
+
+  return Array.from(candidateOffsets)
+    .filter((offsetMinutes) => {
+      const candidateUtc = localTimestamp - offsetMinutes * 60_000;
+      const resolvedParts = getPartsInTimeZone(candidateUtc, timeZone);
+      return sameWallClock(localParts, resolvedParts);
+    })
+    .sort((a, b) => a - b);
 }
 
 function sameWallClock(a: DateParts, b: DateParts) {

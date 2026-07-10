@@ -13,6 +13,18 @@ namespace {
 constexpr double kPi = 3.141592653589793238462643383279502884;
 constexpr double kUnixEpochJulianDay = 2440587.5;
 constexpr const char* kEngineVersion = "0.1.0";
+constexpr const char* kCalculationProfileId = "vedic-lahiri-prototype-v1";
+constexpr const char* kCalculationProfileLabel =
+    "Vedic Lahiri prototype profile";
+constexpr const char* kCalculationPrecision = "prototype";
+constexpr const char* kEphemeris = "deterministic-low-precision-formulae";
+constexpr const char* kPlanetPositionSource =
+    "Built-in deterministic formulae";
+constexpr const char* kAyanamshaModel = "Mean Lahiri approximation";
+constexpr const char* kHouseModel = "Whole sign from sidereal ascendant";
+constexpr const char* kNodeModel = "Mean lunar nodes";
+constexpr const char* kExpectedTolerance =
+    "Prototype only; validate against Swiss Ephemeris or JPL before production interpretation.";
 
 const char* kSigns[12] = {
     "Aries",      "Taurus",    "Gemini", "Cancer",
@@ -673,11 +685,22 @@ BirthChart calculateBirthChart(const BirthChartInput& input) {
   chart.subjectName = input.subjectName;
   chart.metadata = {
       kEngineVersion,
+      {
+          kCalculationProfileId,
+          kCalculationProfileLabel,
+          kCalculationPrecision,
+          kEphemeris,
+          kPlanetPositionSource,
+          kAyanamshaModel,
+          kHouseModel,
+          kNodeModel,
+          kExpectedTolerance,
+      },
       "lahiri",
       ayanamsha,
       "sidereal",
       "whole_sign",
-      "deterministic-low-precision-formulae",
+      kEphemeris,
       localDateTimeLabel(input.birthDate, input.birthTime),
       utcIsoFromLocal(input.birthDate, input.birthTime, input.timezoneOffsetMinutes),
       julianDay,
@@ -688,7 +711,7 @@ BirthChart calculateBirthChart(const BirthChartInput& input) {
       input.timezoneOffsetMinutes,
       {
           "Uses Lahiri sidereal zodiac with a mean ayanamsha model and whole sign houses.",
-          "Planetary positions use deterministic low-precision formulae; replace with Swiss Ephemeris or JPL-backed calculations for arc-minute requirements.",
+          "Planetary positions use deterministic low-precision formulae; replace with Swiss Ephemeris or JPL-backed calculations for production-grade interpretation.",
       },
   };
   chart.ascendant = buildPlacement(ascendant);
@@ -744,6 +767,26 @@ std::string chartToJson(const BirthChart& chart) {
 
   output << "\"metadata\":{";
   output << "\"engineVersion\":" << jsonString(chart.metadata.engineVersion)
+         << ",\"calculationProfile\":{"
+         << "\"id\":" << jsonString(chart.metadata.calculationProfile.id)
+         << ",\"label\":"
+         << jsonString(chart.metadata.calculationProfile.label)
+         << ",\"precision\":"
+         << jsonString(chart.metadata.calculationProfile.precision)
+         << ",\"ephemeris\":"
+         << jsonString(chart.metadata.calculationProfile.ephemeris)
+         << ",\"planetPositionSource\":"
+         << jsonString(
+                chart.metadata.calculationProfile.planetPositionSource)
+         << ",\"ayanamshaModel\":"
+         << jsonString(chart.metadata.calculationProfile.ayanamshaModel)
+         << ",\"houseModel\":"
+         << jsonString(chart.metadata.calculationProfile.houseModel)
+         << ",\"nodeModel\":"
+         << jsonString(chart.metadata.calculationProfile.nodeModel)
+         << ",\"expectedTolerance\":"
+         << jsonString(chart.metadata.calculationProfile.expectedTolerance)
+         << "}"
          << ",\"ayanamsha\":" << jsonString(chart.metadata.ayanamsha)
          << ",\"ayanamshaDegrees\":"
          << jsonNumber(chart.metadata.ayanamshaDegrees)

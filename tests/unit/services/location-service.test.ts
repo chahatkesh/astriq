@@ -19,6 +19,18 @@ describe("resolveTimeZoneOffsetMinutes", () => {
       resolveTimeZoneOffsetMinutes("2024-07-15", "12:00", "America/New_York"),
     ).toBe(-240);
   });
+
+  it("rejects nonexistent local times during daylight-saving gaps", () => {
+    expect(() =>
+      resolveTimeZoneOffsetMinutes("2024-03-10", "02:30", "America/New_York"),
+    ).toThrow(/does not exist/);
+  });
+
+  it("rejects ambiguous local times during daylight-saving overlaps", () => {
+    expect(() =>
+      resolveTimeZoneOffsetMinutes("2024-11-03", "01:30", "America/New_York"),
+    ).toThrow(/ambiguous/);
+  });
 });
 
 describe("normalizeBirthLocation", () => {
@@ -52,5 +64,22 @@ describe("normalizeBirthLocation", () => {
         timeZone: "Not/AZone",
       }),
     ).toThrow(/valid IANA time zone/);
+  });
+
+  it("accepts a manual offset for ambiguous clock-change times", () => {
+    expect(
+      normalizeBirthLocation({
+        birthDate: "2024-11-03",
+        birthTime: "01:30",
+        placeName: "New York, United States",
+        latitude: 40.7128,
+        longitude: -74.006,
+        timeZone: "America/New_York",
+        timezoneOffsetMinutes: -300,
+      }),
+    ).toMatchObject({
+      timeZone: "America/New_York",
+      timezoneOffsetMinutes: -300,
+    });
   });
 });
