@@ -30,6 +30,7 @@
     "db:deploy": "pnpm --filter database db:deploy",
     "db:push": "pnpm --filter database db:push",
     "db:seed": "pnpm --filter database db:seed",
+    "db:check-migration": "node --import tsx scripts/check-schema-migration.ts",
     "secrets:decrypt": "SOPS_AGE_KEY_FILE=.age-key.txt make decrypt-local",
     "secrets:decrypt:production": "SOPS_AGE_KEY_FILE=.age-key.txt make decrypt-production",
     "secrets:edit": "SOPS_AGE_KEY_FILE=.age-key.txt make edit-local",
