@@ -13,17 +13,22 @@ namespace {
 constexpr double kPi = 3.141592653589793238462643383279502884;
 constexpr double kUnixEpochJulianDay = 2440587.5;
 constexpr const char* kEngineVersion = "0.1.0";
-constexpr const char* kCalculationProfileId = "vedic-lahiri-prototype-v1";
-constexpr const char* kCalculationProfileLabel =
+constexpr const char* kPrototypeBackend = "prototype";
+constexpr const char* kJplSpiceBackend = "jpl_spice";
+constexpr const char* kPrototypeProfileId = "vedic-lahiri-prototype-v1";
+constexpr const char* kPrototypeProfileLabel =
     "Vedic Lahiri prototype profile";
-constexpr const char* kCalculationPrecision = "prototype";
-constexpr const char* kEphemeris = "deterministic-low-precision-formulae";
-constexpr const char* kPlanetPositionSource =
+constexpr const char* kPrototypePrecision = "prototype";
+constexpr const char* kPrototypeEphemeris =
+    "deterministic-low-precision-formulae";
+constexpr const char* kPrototypePlanetPositionSource =
     "Built-in deterministic formulae";
-constexpr const char* kAyanamshaModel = "Mean Lahiri approximation";
-constexpr const char* kHouseModel = "Whole sign from sidereal ascendant";
-constexpr const char* kNodeModel = "Mean lunar nodes";
-constexpr const char* kExpectedTolerance =
+constexpr const char* kPrototypeAyanamshaModel =
+    "Mean Lahiri approximation";
+constexpr const char* kPrototypeHouseModel =
+    "Whole sign from sidereal ascendant";
+constexpr const char* kPrototypeNodeModel = "Mean lunar nodes";
+constexpr const char* kPrototypeExpectedTolerance =
     "Prototype only; validate against Swiss Ephemeris or JPL before production interpretation.";
 
 const char* kSigns[12] = {
@@ -658,6 +663,8 @@ BirthChartInput parseInputJson(const std::string& json) {
   input.timeZone = requireString(json, "timeZone");
   input.ayanamsha = optionalString(json, "ayanamsha", "lahiri");
   input.houseSystem = optionalString(json, "houseSystem", "whole_sign");
+  input.engineBackend =
+      optionalString(json, "engineBackend", kPrototypeBackend);
   input.latitude = requireNumber(json, "latitude");
   input.longitude = requireNumber(json, "longitude");
   input.timezoneOffsetMinutes = requireInteger(json, "timezoneOffsetMinutes");
@@ -670,10 +677,22 @@ BirthChartInput parseInputJson(const std::string& json) {
     throw std::runtime_error("Only whole sign houses are supported.");
   }
 
+  if (input.engineBackend != kPrototypeBackend &&
+      input.engineBackend != kJplSpiceBackend) {
+    throw std::runtime_error(
+        "Engine backend must be prototype or jpl_spice.");
+  }
+
   return input;
 }
 
 BirthChart calculateBirthChart(const BirthChartInput& input) {
+  if (input.engineBackend == kJplSpiceBackend) {
+    throw std::runtime_error(
+        "JPL SPICE backend is recognized but not linked into this build. "
+        "Install free NAIF/JPL assets and build with the SPICE backend enabled.");
+  }
+
   const double julianDay = julianDayFromLocal(
       input.birthDate, input.birthTime, input.timezoneOffsetMinutes);
   const double ayanamsha = lahiriAyanamsha(julianDay);
@@ -686,21 +705,22 @@ BirthChart calculateBirthChart(const BirthChartInput& input) {
   chart.metadata = {
       kEngineVersion,
       {
-          kCalculationProfileId,
-          kCalculationProfileLabel,
-          kCalculationPrecision,
-          kEphemeris,
-          kPlanetPositionSource,
-          kAyanamshaModel,
-          kHouseModel,
-          kNodeModel,
-          kExpectedTolerance,
+          kPrototypeProfileId,
+          kPrototypeProfileLabel,
+          kPrototypePrecision,
+          kPrototypeEphemeris,
+          kPrototypePlanetPositionSource,
+          kPrototypeAyanamshaModel,
+          kPrototypeHouseModel,
+          kPrototypeNodeModel,
+          kPrototypeExpectedTolerance,
       },
+      kPrototypeBackend,
       "lahiri",
       ayanamsha,
       "sidereal",
       "whole_sign",
-      kEphemeris,
+      kPrototypeEphemeris,
       localDateTimeLabel(input.birthDate, input.birthTime),
       utcIsoFromLocal(input.birthDate, input.birthTime, input.timezoneOffsetMinutes),
       julianDay,
@@ -787,6 +807,8 @@ std::string chartToJson(const BirthChart& chart) {
          << ",\"expectedTolerance\":"
          << jsonString(chart.metadata.calculationProfile.expectedTolerance)
          << "}"
+         << ",\"engineBackend\":"
+         << jsonString(chart.metadata.engineBackend)
          << ",\"ayanamsha\":" << jsonString(chart.metadata.ayanamsha)
          << ",\"ayanamshaDegrees\":"
          << jsonNumber(chart.metadata.ayanamshaDegrees)

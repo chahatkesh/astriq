@@ -1,5 +1,6 @@
 export type AyanamshaMode = "lahiri";
 export type HouseSystem = "whole_sign";
+export type EngineBackend = "prototype" | "jpl_spice";
 
 export type BirthChartFormPayload = {
   subjectName?: string;
@@ -12,6 +13,7 @@ export type BirthChartFormPayload = {
   timezoneOffsetMinutes?: number;
   ayanamsha?: AyanamshaMode;
   houseSystem?: HouseSystem;
+  engineBackend?: EngineBackend;
 };
 
 export type ZodiacSign =
@@ -73,6 +75,7 @@ export type CalculationProfile = {
 export type BirthChartMetadata = {
   engineVersion: string;
   calculationProfile: CalculationProfile;
+  engineBackend: EngineBackend;
   ayanamsha: AyanamshaMode;
   ayanamshaDegrees: number;
   zodiac: "sidereal";

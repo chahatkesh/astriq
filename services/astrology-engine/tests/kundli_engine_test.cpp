@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <exception>
 #include <iostream>
 #include <string>
 
@@ -20,6 +21,7 @@ kundli::BirthChartInput sampleInput() {
       "Asia/Kolkata",
       "lahiri",
       "whole_sign",
+      "prototype",
       28.6139,
       77.2090,
       330,
@@ -44,6 +46,7 @@ int main() {
 
   const kundli::BirthChart chart = kundli::calculateBirthChart(sampleInput());
   assert(chart.metadata.utcIso == "2000-01-01T12:00:00.000Z");
+  assert(chart.metadata.engineBackend == "prototype");
   assert(chart.metadata.calculationProfile.id == "vedic-lahiri-prototype-v1");
   assert(chart.metadata.calculationProfile.precision == "prototype");
   assert(chart.metadata.calculationProfile.nodeModel == "Mean lunar nodes");
@@ -86,6 +89,23 @@ int main() {
   assert(parsed.birthDate == "2000-01-01");
   assert(parsed.birthTime == "17:30");
   assert(parsed.timezoneOffsetMinutes == 330);
+
+  const kundli::BirthChartInput spiceParsed = kundli::parseInputJson(
+      "{\"birthDate\":\"2000-01-01\",\"birthTime\":\"17:30\","
+      "\"placeName\":\"Delhi, India\",\"timeZone\":\"Asia/Kolkata\","
+      "\"latitude\":28.6139,\"longitude\":77.209,"
+      "\"timezoneOffsetMinutes\":330,\"engineBackend\":\"jpl_spice\"}");
+  assert(spiceParsed.engineBackend == "jpl_spice");
+
+  bool sawUnavailableSpiceBackend = false;
+  try {
+    (void)kundli::calculateBirthChart(spiceParsed);
+  } catch (const std::exception& error) {
+    const std::string message = error.what();
+    sawUnavailableSpiceBackend =
+        message.find("JPL SPICE backend is recognized") != std::string::npos;
+  }
+  assert(sawUnavailableSpiceBackend);
 
   std::cout << "kundli-engine tests passed\n";
   return 0;

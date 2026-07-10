@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type {
   AyanamshaMode,
   BirthChartFormPayload,
+  EngineBackend,
   BirthChartResult,
   HouseSystem,
 } from "@/lib/kundli/types";
@@ -54,6 +55,7 @@ export async function generateBirthChart(payload: unknown) {
     subjectName: validation.value.subjectName?.trim() || undefined,
     ayanamsha: validation.value.ayanamsha ?? "lahiri",
     houseSystem: validation.value.houseSystem ?? "whole_sign",
+    engineBackend: validation.value.engineBackend ?? getDefaultEngineBackend(),
   };
 
   return runKundliEngine(engineInput);
@@ -111,6 +113,7 @@ export function validateBirthChartPayload(payload: unknown): ValidationResult {
   const timezoneOffsetMinutes = optionalInteger(input.timezoneOffsetMinutes);
   const ayanamsha = optionalAyanamsha(input.ayanamsha, fields);
   const houseSystem = optionalHouseSystem(input.houseSystem, fields);
+  const engineBackend = optionalEngineBackend(input.engineBackend, fields);
 
   if (birthDate && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
     fields.birthDate = "Use YYYY-MM-DD.";
@@ -159,8 +162,25 @@ export function validateBirthChartPayload(payload: unknown): ValidationResult {
       timezoneOffsetMinutes,
       ayanamsha,
       houseSystem,
+      engineBackend,
     },
   };
+}
+
+function getDefaultEngineBackend(): EngineBackend {
+  const configured = process.env.KUNDLI_ENGINE_BACKEND;
+
+  if (!configured) {
+    return "prototype";
+  }
+
+  if (configured === "prototype" || configured === "jpl_spice") {
+    return configured;
+  }
+
+  throw new EngineExecutionError(
+    `Unsupported KUNDLI_ENGINE_BACKEND "${configured}". Expected prototype or jpl_spice.`,
+  );
 }
 
 function runKundliEngine(input: BirthChartFormPayload) {
@@ -322,5 +342,21 @@ function optionalHouseSystem(
   }
 
   fields.houseSystem = "Only whole sign houses are currently supported.";
+  return undefined;
+}
+
+function optionalEngineBackend(
+  value: unknown,
+  fields: Record<string, string>,
+): EngineBackend | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  if (value === "prototype" || value === "jpl_spice") {
+    return value;
+  }
+
+  fields.engineBackend = "Engine backend must be prototype or jpl_spice.";
   return undefined;
 }

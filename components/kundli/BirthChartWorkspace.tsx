@@ -2,6 +2,16 @@
 
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { KundliChart } from "@/components/kundli/KundliChart";
+import {
+  getKundliMessages,
+  type KundliMessages,
+} from "@/lib/i18n/kundli-messages";
+import {
+  defaultLocale,
+  getSupportedLocale,
+  supportedLocales,
+  type LocaleCode,
+} from "@/lib/i18n/locales";
 import { locationPresets } from "@/lib/kundli/location-presets";
 import type {
   BirthChartApiError,
@@ -34,12 +44,15 @@ const initialForm: FormState = {
 };
 
 export function BirthChartWorkspace() {
+  const [localeCode, setLocaleCode] = useState<LocaleCode>(defaultLocale);
   const [form, setForm] = useState<FormState>(initialForm);
   const [chart, setChart] = useState<BirthChartResult | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const locale = getSupportedLocale(localeCode);
+  const messages = getKundliMessages(localeCode);
 
   const timeZones = useMemo(() => {
     const intlWithValues = Intl as typeof Intl & {
@@ -74,6 +87,7 @@ export function BirthChartWorkspace() {
         : undefined,
       ayanamsha: "lahiri",
       houseSystem: "whole_sign",
+      engineBackend: "prototype",
     };
 
     try {
@@ -94,13 +108,13 @@ export function BirthChartWorkspace() {
       }
 
       if (!response.ok) {
-        setFormError("The chart request could not be completed.");
+        setFormError(messages.states.requestFailed);
         return;
       }
 
       setChart(body.chart);
     } catch {
-      setFormError("The chart request could not be completed.");
+      setFormError(messages.states.requestFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -126,7 +140,7 @@ export function BirthChartWorkspace() {
 
   function useCurrentPosition() {
     if (!navigator.geolocation) {
-      setFormError("Geolocation is unavailable in this browser.");
+      setFormError(messages.states.geolocationUnavailable);
       return;
     }
 
@@ -137,7 +151,7 @@ export function BirthChartWorkspace() {
           Intl.DateTimeFormat().resolvedOptions().timeZone || form.timeZone;
         setForm((current) => ({
           ...current,
-          placeName: current.placeName || "Current location",
+          placeName: current.placeName || messages.states.currentLocation,
           latitude: position.coords.latitude.toFixed(6),
           longitude: position.coords.longitude.toFixed(6),
           timeZone: browserTimeZone,
@@ -147,7 +161,7 @@ export function BirthChartWorkspace() {
         setIsLocating(false);
       },
       () => {
-        setFormError("Current position could not be read.");
+        setFormError(messages.states.geolocationFailed);
         setIsLocating(false);
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
@@ -155,33 +169,59 @@ export function BirthChartWorkspace() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main
+      className="min-h-screen bg-background text-foreground"
+      dir={locale.direction}
+      lang={locale.code}
+    >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-2 border-b border-foreground/15 pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
-              Vedic birth chart
+              {messages.app.eyebrow}
             </p>
             <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">
-              Birth Chart Generator
+              {messages.app.title}
             </h1>
           </div>
-          <p className="font-mono text-sm text-foreground/60">
-            Lahiri / sidereal / whole sign
-          </p>
+          <div className="grid gap-2 sm:min-w-52">
+            <label
+              className="text-xs uppercase text-foreground/45"
+              htmlFor="locale"
+            >
+              {messages.app.language}
+            </label>
+            <select
+              className={inputClassName}
+              id="locale"
+              onChange={(event) =>
+                setLocaleCode(event.target.value as LocaleCode)
+              }
+              value={localeCode}
+            >
+              {supportedLocales.map((item) => (
+                <option key={item.code} value={item.code}>
+                  {item.nativeName} / {item.englishName}
+                </option>
+              ))}
+            </select>
+            <p className="font-mono text-xs text-foreground/60">
+              {messages.app.subtitle}
+            </p>
+          </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(20rem,24rem)_minmax(0,1fr)]">
           <section className="border border-foreground/15 bg-background">
             <div className="border-b border-foreground/15 px-4 py-3">
-              <h2 className="text-base font-semibold">Birth Details</h2>
+              <h2 className="text-base font-semibold">{messages.form.title}</h2>
             </div>
 
             <form className="grid gap-4 p-4" onSubmit={handleSubmit}>
               <Field
                 error={fieldErrors.subjectName}
                 id="subjectName"
-                label="Full name"
+                label={messages.form.fullName}
               >
                 <input
                   autoComplete="name"
@@ -191,7 +231,7 @@ export function BirthChartWorkspace() {
                   onChange={(event) =>
                     setForm({ ...form, subjectName: event.target.value })
                   }
-                  placeholder="Optional"
+                  placeholder={messages.form.optional}
                   value={form.subjectName}
                 />
               </Field>
@@ -200,7 +240,7 @@ export function BirthChartWorkspace() {
                 <Field
                   error={fieldErrors.birthDate}
                   id="birthDate"
-                  label="Date of birth"
+                  label={messages.form.birthDate}
                 >
                   <input
                     className={inputClassName}
@@ -218,7 +258,7 @@ export function BirthChartWorkspace() {
                 <Field
                   error={fieldErrors.birthTime}
                   id="birthTime"
-                  label="Exact time"
+                  label={messages.form.birthTime}
                 >
                   <input
                     className={inputClassName}
@@ -234,14 +274,14 @@ export function BirthChartWorkspace() {
                 </Field>
               </div>
 
-              <Field id="locationPreset" label="Known birthplace">
+              <Field id="locationPreset" label={messages.form.locationPreset}>
                 <select
                   className={inputClassName}
                   id="locationPreset"
                   onChange={(event) => applyPreset(event.target.value)}
                   value=""
                 >
-                  <option value="">Select a preset</option>
+                  <option value="">{messages.form.selectPreset}</option>
                   {locationPresets.map((preset) => (
                     <option key={preset.label} value={preset.label}>
                       {preset.label}
@@ -253,7 +293,7 @@ export function BirthChartWorkspace() {
               <Field
                 error={fieldErrors.placeName}
                 id="placeName"
-                label="Birthplace"
+                label={messages.form.placeName}
               >
                 <input
                   autoComplete="address-level2"
@@ -274,14 +314,16 @@ export function BirthChartWorkspace() {
                 onClick={useCurrentPosition}
                 type="button"
               >
-                {isLocating ? "Reading position" : "Use current position"}
+                {isLocating
+                  ? messages.form.readingPosition
+                  : messages.form.currentPosition}
               </button>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 <Field
                   error={fieldErrors.latitude}
                   id="latitude"
-                  label="Latitude"
+                  label={messages.form.latitude}
                 >
                   <input
                     className={inputClassName}
@@ -303,7 +345,7 @@ export function BirthChartWorkspace() {
                 <Field
                   error={fieldErrors.longitude}
                   id="longitude"
-                  label="Longitude"
+                  label={messages.form.longitude}
                 >
                   <input
                     className={inputClassName}
@@ -326,7 +368,7 @@ export function BirthChartWorkspace() {
               <Field
                 error={fieldErrors.timeZone}
                 id="timeZone"
-                label="IANA time zone"
+                label={messages.form.timeZone}
               >
                 <input
                   className={inputClassName}
@@ -359,7 +401,9 @@ export function BirthChartWorkspace() {
                   type="checkbox"
                 />
                 <span>
-                  <span className="block font-medium">Manual UTC offset</span>
+                  <span className="block font-medium">
+                    {messages.form.manualOffset}
+                  </span>
                 </span>
               </label>
 
@@ -367,7 +411,7 @@ export function BirthChartWorkspace() {
                 <Field
                   error={fieldErrors.timezoneOffsetMinutes}
                   id="timezoneOffsetMinutes"
-                  label="Offset minutes"
+                  label={messages.form.offsetMinutes}
                 >
                   <input
                     className={inputClassName}
@@ -404,15 +448,23 @@ export function BirthChartWorkspace() {
                 disabled={isSubmitting}
                 type="submit"
               >
-                {isSubmitting ? "Calculating" : "Generate Kundli"}
+                {isSubmitting ? messages.form.submitting : messages.form.submit}
               </button>
             </form>
           </section>
 
           <section aria-live="polite" className="min-w-0">
-            {isSubmitting ? <LoadingState /> : null}
-            {!isSubmitting && chart ? <KundliChart chart={chart} /> : null}
-            {!isSubmitting && !chart ? <EmptyState /> : null}
+            {isSubmitting ? <LoadingState messages={messages} /> : null}
+            {!isSubmitting && chart ? (
+              <KundliChart
+                chart={chart}
+                localeCode={localeCode}
+                messages={messages}
+              />
+            ) : null}
+            {!isSubmitting && !chart ? (
+              <EmptyState messages={messages} />
+            ) : null}
           </section>
         </div>
       </div>
@@ -448,28 +500,30 @@ function Field({
   );
 }
 
-function LoadingState() {
+function LoadingState({ messages }: { messages: KundliMessages }) {
   return (
     <div className="grid min-h-[24rem] place-items-center border border-foreground/15">
       <div className="text-center">
         <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/45">
-          Calculating
+          {messages.states.loadingEyebrow}
         </p>
-        <p className="mt-2 text-lg font-semibold">Preparing chart data</p>
+        <p className="mt-2 text-lg font-semibold">
+          {messages.states.loadingTitle}
+        </p>
       </div>
     </div>
   );
 }
 
-function EmptyState() {
+function EmptyState({ messages }: { messages: KundliMessages }) {
   return (
     <div className="grid min-h-[24rem] place-items-center border border-dashed border-foreground/20 px-6 text-center">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/45">
-          No chart yet
+          {messages.states.emptyEyebrow}
         </p>
         <p className="mt-2 text-lg font-semibold">
-          Enter precise birth details to generate a Kundli.
+          {messages.states.emptyTitle}
         </p>
       </div>
     </div>
