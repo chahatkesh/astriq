@@ -5,7 +5,7 @@ services:
     build:
       context: ../..
       dockerfile: infrastructure/dockerfiles/Dockerfile.prod
-    image: birth-chart-generator:prod
+    image: ${APP_IMAGE:-birth-chart-generator:prod}
     container_name: birth-chart-generator-app-prod
     restart: unless-stopped
     env_file:
