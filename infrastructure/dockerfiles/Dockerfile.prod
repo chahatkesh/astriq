@@ -18,6 +18,8 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 WORKDIR /workspace
 
+RUN apk add --no-cache g++ make
+
 COPY --from=deps /workspace/node_modules ./node_modules
 COPY app ./app
 COPY components ./components
@@ -25,6 +27,7 @@ COPY hooks ./hooks
 COPY lib ./lib
 COPY packages ./packages
 COPY public ./public
+COPY scripts ./scripts
 COPY services ./services
 COPY workers ./workers
 COPY next.config.ts package.json pnpm-lock.yaml pnpm-workspace.yaml postcss.config.mjs tsconfig.json ./
@@ -56,6 +59,7 @@ RUN mkdir .next && chown nextjs:nodejs .next
 
 COPY --from=builder --chown=nextjs:nodejs /workspace/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /workspace/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /workspace/services/astrology-engine/bin/kundli-engine ./services/astrology-engine/bin/kundli-engine
 
 USER nextjs
 

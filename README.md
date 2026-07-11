@@ -21,6 +21,8 @@ There are no landing or documentation apps, and no staging runtime.
 ```bash
 pnpm dev:procs
 pnpm dev
+pnpm build:engine
+pnpm test:engine
 pnpm docker:dev
 pnpm db:generate
 pnpm db:migrate
@@ -35,6 +37,8 @@ pnpm build
 ## Production
 
 Local and production runtime contracts live in [infrastructure/](infrastructure/). The app exposes `/api/health` for deployment checks.
+
+The Kundli calculation pipeline and C++ engine contract are documented in [Kundli calculation pipeline](docs/architecture/kundli-calculation-pipeline.md).
 
 Encrypted local and production environment files live in [secrets/](secrets/). See [SOPS secret management](docs/setup/secrets/sops-secret-management.md) for age key generation and daily commands.
 
