@@ -6,12 +6,12 @@ The app uses one Next.js App Router surface in `app/`. Route handlers stay thin 
 
 The Kundli flow follows that structure:
 
-1. `components/kundli/BirthChartWorkspace.tsx` collects birth details and posts JSON to `/api/kundli`.
+1. `components/kundli/BirthChartWorkspace.tsx` collects birth details and posts JSON to `/api/kundli`. Birthplace entry uses a search box backed by `/api/places`, which autofills coordinates and the IANA time zone and prompts the user to disambiguate when a name matches multiple places.
 2. `app/api/kundli/route.ts` parses the request and calls `generateBirthChart`.
 3. `services/birth-chart-service.ts` validates input, normalizes location data, and invokes the native engine.
-4. `services/location-service.ts` resolves the time-zone offset for the birth wall time using the runtime IANA time-zone database.
+4. `services/location-service.ts` resolves the time-zone offset for the birth wall time using the runtime IANA time-zone database, and provides deterministic offline birthplace search (`searchPlaces`) via `lib/kundli/place-index.ts`. Search runs over the offline `all-the-cities` dataset (~135k cities, population > 1000) and derives each candidate's IANA time zone from its coordinates with `tz-lookup`, so no external geocoding provider, API key, or network is required. Both packages are declared in `serverExternalPackages` because they read bundled binary data files at runtime.
 5. `services/astrology-engine/bin/kundli-engine` performs the C++ calculation and returns structured JSON.
-6. `components/kundli/KundliChart.tsx` renders houses, signs, planets, nakshatras, degrees, and retrograde status.
+6. `components/kundli/KundliChart.tsx` renders houses, signs, planets, nakshatras, degrees, and retrograde status, localizing astrology vocabulary through `lib/i18n/glossary.ts`.
 
 ## C++ Integration Method
 

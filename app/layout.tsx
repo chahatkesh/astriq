@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Noto_Sans_Bengali,
+  Noto_Sans_Devanagari,
+} from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,10 +17,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const notoSansDevanagari = Noto_Sans_Devanagari({
+  variable: "--font-noto-devanagari",
+  subsets: ["devanagari"],
+  display: "swap",
+});
+
+const notoSansBengali = Noto_Sans_Bengali({
+  variable: "--font-noto-bengali",
+  subsets: ["bengali"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Birth Chart Generator",
   description: "Production app for generating and managing birth charts.",
 };
+
+const fontVariables = [
+  geistSans.variable,
+  geistMono.variable,
+  notoSansDevanagari.variable,
+  notoSansBengali.variable,
+].join(" ");
 
 export default function RootLayout({
   children,
@@ -23,10 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${fontVariables} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

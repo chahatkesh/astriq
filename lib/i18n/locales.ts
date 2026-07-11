@@ -203,3 +203,9 @@ export function getSupportedLocale(code: string) {
     supportedLocales[0]
   );
 }
+
+export function isSupportedLocale(code: string): code is LocaleCode {
+  return supportedLocales.some((locale) => locale.code === code);
+}
+
+export const localeCodes = supportedLocales.map((locale) => locale.code);

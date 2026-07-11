@@ -1,4 +1,11 @@
+import {
+  getPlaceRecordById,
+  searchPlaceRecords,
+  type PlaceCandidate,
+} from "@/lib/kundli/place-index";
 import type { BirthChartFormPayload } from "@/lib/kundli/types";
+
+export type { PlaceCandidate } from "@/lib/kundli/place-index";
 
 export type NormalizedBirthLocation = {
   placeName: string;
@@ -6,6 +13,13 @@ export type NormalizedBirthLocation = {
   longitude: number;
   timeZone: string;
   timezoneOffsetMinutes: number;
+};
+
+export type PlaceSearchResult = {
+  query: string;
+  candidates: PlaceCandidate[];
+  /** True when more than one candidate matched and the user must disambiguate. */
+  ambiguous: boolean;
 };
 
 export type BirthLocationInput = Pick<
@@ -243,4 +257,26 @@ function sameWallClock(a: DateParts, b: DateParts) {
     a.hour === b.hour &&
     a.minute === b.minute
   );
+}
+
+/**
+ * Search the offline city dataset for birthplaces matching a free-text query.
+ *
+ * Delegates ranking to `searchPlaceRecords`, which orders exact/prefix/substring
+ * matches and then by population. When more than one candidate matches,
+ * `ambiguous` is true so the UI can prompt the user to choose the correct place
+ * before autofilling coordinates and time zone.
+ */
+export function searchPlaces(query: string): PlaceSearchResult {
+  const candidates = searchPlaceRecords(query);
+
+  return {
+    query: query.trim(),
+    candidates,
+    ambiguous: candidates.length > 1,
+  };
+}
+
+export function findPlaceById(id: string): PlaceCandidate | null {
+  return getPlaceRecordById(id);
 }
