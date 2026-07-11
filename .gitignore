@@ -21,6 +21,8 @@
 # production
 /build
 /services/astrology-engine/bin/
+/services/astrology-engine/assets/
+/services/astrology-engine/vendor/
 
 # misc
 .DS_Store

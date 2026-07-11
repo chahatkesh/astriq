@@ -13,6 +13,7 @@ struct BirthChartInput {
   std::string timeZone;
   std::string ayanamsha = "lahiri";
   std::string houseSystem = "whole_sign";
+  std::string engineBackend = "prototype";
   double latitude = 0.0;
   double longitude = 0.0;
   int timezoneOffsetMinutes = 0;
@@ -61,6 +62,7 @@ struct CalculationProfile {
 struct BirthChartMetadata {
   std::string engineVersion;
   CalculationProfile calculationProfile;
+  std::string engineBackend;
   std::string ayanamsha;
   double ayanamshaDegrees = 0.0;
   std::string zodiac;

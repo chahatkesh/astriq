@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import type { KundliMessages } from "@/lib/i18n/kundli-messages";
+import type { LocaleCode } from "@/lib/i18n/locales";
 import type {
   BirthChartResult,
   KundliHouse,
@@ -7,6 +9,8 @@ import type {
 
 type KundliChartProps = {
   chart: BirthChartResult;
+  localeCode: LocaleCode;
+  messages: KundliMessages;
 };
 
 const houseCellStyles: Record<number, CSSProperties> = {
@@ -49,7 +53,7 @@ const fallbackCalculationProfile = {
     "This chart was generated before calculation profile metadata was available.",
 } satisfies BirthChartResult["metadata"]["calculationProfile"];
 
-export function KundliChart({ chart }: KundliChartProps) {
+export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
   const planetByKey = new Map(
     chart.planets.map((planet) => [planet.key, planet] as const),
   );
@@ -68,7 +72,9 @@ export function KundliChart({ chart }: KundliChartProps) {
         <div className="border-b border-foreground/15 px-4 py-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold">Kundli</h2>
+              <h2 className="text-base font-semibold">
+                {messages.chart.kundli}
+              </h2>
               <p className="mt-1 text-sm text-foreground/60">
                 {chart.metadata.placeName} / {formatLocalTime(chart)}
               </p>
@@ -76,27 +82,33 @@ export function KundliChart({ chart }: KundliChartProps) {
             <span
               className={`border px-2 py-1 text-xs font-medium ${precisionClassName}`}
             >
-              {profile.precision === "reference" ? "Reference" : "Prototype"}
+              {profile.precision === "reference"
+                ? messages.chart.reference
+                : messages.chart.prototype}
             </span>
           </div>
         </div>
 
         <dl className="grid border-b border-foreground/15 text-sm sm:grid-cols-3">
           <SummaryItem
-            detail={`${formatDegrees(chart.ascendant.degreeInSign)} / ${
-              chart.ascendant.nakshatra.name
-            } ${chart.ascendant.nakshatra.pada}`}
-            label="Lagna"
+            detail={`${formatDegrees(
+              chart.ascendant.degreeInSign,
+              localeCode,
+            )} / ${chart.ascendant.nakshatra.name} ${formatNumber(
+              chart.ascendant.nakshatra.pada,
+              localeCode,
+            )}`}
+            label={messages.chart.lagna}
             value={chart.ascendant.sign}
           />
           <SummaryItem
-            detail={moon ? formatPlanetDetail(moon) : "-"}
-            label="Moon"
+            detail={moon ? formatPlanetDetail(moon, localeCode) : "-"}
+            label={messages.chart.moon}
             value={moon?.sign ?? "-"}
           />
           <SummaryItem
-            detail={sun ? formatPlanetDetail(sun) : "-"}
-            label="Sun"
+            detail={sun ? formatPlanetDetail(sun, localeCode) : "-"}
+            label={messages.chart.sun}
             value={sun?.sign ?? "-"}
           />
         </dl>
@@ -108,17 +120,17 @@ export function KundliChart({ chart }: KundliChartProps) {
           >
             <div className="col-start-2 col-span-2 row-start-2 row-span-2 flex flex-col items-center justify-center border border-foreground/15 bg-foreground/[0.03] p-3 text-center">
               <span className="text-xs uppercase text-foreground/50">
-                Lagna
+                {messages.chart.lagna}
               </span>
               <span className="mt-1 text-lg font-semibold">
                 {chart.ascendant.sign}
               </span>
               <span className="font-mono text-sm text-foreground/65">
-                {formatDegrees(chart.ascendant.degreeInSign)}
+                {formatDegrees(chart.ascendant.degreeInSign, localeCode)}
               </span>
               <span className="mt-2 text-xs text-foreground/55">
                 {chart.ascendant.nakshatra.name}{" "}
-                {chart.ascendant.nakshatra.pada}
+                {formatNumber(chart.ascendant.nakshatra.pada, localeCode)}
               </span>
             </div>
 
@@ -136,31 +148,55 @@ export function KundliChart({ chart }: KundliChartProps) {
       <section className="grid gap-6">
         <div className="border border-foreground/15 bg-background">
           <div className="border-b border-foreground/15 px-4 py-3">
-            <h2 className="text-base font-semibold">Calculation Profile</h2>
+            <h2 className="text-base font-semibold">
+              {messages.chart.calculationProfile}
+            </h2>
             <p className="mt-1 text-sm text-foreground/60">{profile.label}</p>
           </div>
 
           <dl className="grid text-sm sm:grid-cols-2">
-            <MetaItem label="Precision" value={profile.precision} />
-            <MetaItem label="Ephemeris" value={profile.ephemeris} />
             <MetaItem
-              label="Planet source"
+              label={messages.metadata.backend}
+              value={chart.metadata.engineBackend ?? "prototype"}
+            />
+            <MetaItem
+              label={messages.metadata.precision}
+              value={profile.precision}
+            />
+            <MetaItem
+              label={messages.metadata.ephemeris}
+              value={profile.ephemeris}
+            />
+            <MetaItem
+              label={messages.metadata.planetSource}
               value={profile.planetPositionSource}
             />
-            <MetaItem label="Ayanamsha model" value={profile.ayanamshaModel} />
-            <MetaItem label="House model" value={profile.houseModel} />
-            <MetaItem label="Node model" value={profile.nodeModel} />
             <MetaItem
-              label="Ayanamsha"
-              value={formatDegrees(chart.metadata.ayanamshaDegrees)}
+              label={messages.metadata.ayanamshaModel}
+              value={profile.ayanamshaModel}
             />
             <MetaItem
-              label="Julian day"
-              value={chart.metadata.julianDay.toFixed(5)}
+              label={messages.metadata.houseModel}
+              value={profile.houseModel}
             />
-            <MetaItem label="Time zone" value={chart.metadata.timeZone} />
             <MetaItem
-              label="UTC offset"
+              label={messages.metadata.nodeModel}
+              value={profile.nodeModel}
+            />
+            <MetaItem
+              label={messages.metadata.ayanamsha}
+              value={formatDegrees(chart.metadata.ayanamshaDegrees, localeCode)}
+            />
+            <MetaItem
+              label={messages.metadata.julianDay}
+              value={formatDecimal(chart.metadata.julianDay, localeCode, 5)}
+            />
+            <MetaItem
+              label={messages.metadata.timeZone}
+              value={chart.metadata.timeZone}
+            />
+            <MetaItem
+              label={messages.metadata.utcOffset}
               value={formatOffset(chart.metadata.timezoneOffsetMinutes)}
             />
           </dl>
@@ -175,9 +211,11 @@ export function KundliChart({ chart }: KundliChartProps) {
 
         <div className="border border-foreground/15 bg-background">
           <div className="border-b border-foreground/15 px-4 py-3">
-            <h2 className="text-base font-semibold">Planetary Positions</h2>
+            <h2 className="text-base font-semibold">
+              {messages.chart.planetaryPositions}
+            </h2>
             <p className="mt-1 text-sm text-foreground/60">
-              Lahiri / sidereal / whole sign houses
+              {messages.chart.planetarySubtitle}
             </p>
           </div>
 
@@ -185,12 +223,24 @@ export function KundliChart({ chart }: KundliChartProps) {
             <table className="w-full min-w-[46rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-foreground/15 text-left text-xs uppercase text-foreground/50">
-                  <th className="px-4 py-3 font-medium">Graha</th>
-                  <th className="px-4 py-3 font-medium">Sign</th>
-                  <th className="px-4 py-3 font-medium">Degree</th>
-                  <th className="px-4 py-3 font-medium">House</th>
-                  <th className="px-4 py-3 font-medium">Nakshatra</th>
-                  <th className="px-4 py-3 font-medium">Retrograde</th>
+                  <th className="px-4 py-3 font-medium">
+                    {messages.table.graha}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {messages.table.sign}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {messages.table.degree}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {messages.table.house}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {messages.table.nakshatra}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {messages.table.retrograde}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -202,14 +252,19 @@ export function KundliChart({ chart }: KundliChartProps) {
                     <td className="px-4 py-3 font-medium">{planet.name}</td>
                     <td className="px-4 py-3">{planet.sign}</td>
                     <td className="px-4 py-3 font-mono">
-                      {formatDegrees(planet.degreeInSign)}
+                      {formatDegrees(planet.degreeInSign, localeCode)}
                     </td>
-                    <td className="px-4 py-3 font-mono">{planet.house}</td>
-                    <td className="px-4 py-3">
-                      {planet.nakshatra.name} {planet.nakshatra.pada}
+                    <td className="px-4 py-3 font-mono">
+                      {formatNumber(planet.house, localeCode)}
                     </td>
                     <td className="px-4 py-3">
-                      {planet.retrograde ? "Yes" : "No"}
+                      {planet.nakshatra.name}{" "}
+                      {formatNumber(planet.nakshatra.pada, localeCode)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {planet.retrograde
+                        ? messages.table.yes
+                        : messages.table.no}
                     </td>
                   </tr>
                 ))}
@@ -289,13 +344,13 @@ function MetaItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function formatDegrees(value: number) {
+function formatDegrees(value: number, localeCode: LocaleCode) {
   const totalMinutes = Math.round(value * 60);
   const degrees = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  return `${degrees.toString().padStart(2, "0")}deg ${minutes
-    .toString()
-    .padStart(2, "0")}'`;
+  const degreeText = formatNumber(degrees, localeCode).padStart(2, "0");
+  const minuteText = formatNumber(minutes, localeCode).padStart(2, "0");
+  return `${degreeText}deg ${minuteText}'`;
 }
 
 function formatOffset(minutes: number) {
@@ -308,10 +363,29 @@ function formatOffset(minutes: number) {
   return `UTC${sign}${hours}:${mins}`;
 }
 
-function formatPlanetDetail(planet: PlanetPosition) {
-  return `${formatDegrees(planet.degreeInSign)} / ${planet.nakshatra.name} ${
-    planet.nakshatra.pada
-  }`;
+function formatPlanetDetail(planet: PlanetPosition, localeCode: LocaleCode) {
+  return `${formatDegrees(planet.degreeInSign, localeCode)} / ${
+    planet.nakshatra.name
+  } ${formatNumber(planet.nakshatra.pada, localeCode)}`;
+}
+
+function formatDecimal(
+  value: number,
+  localeCode: LocaleCode,
+  fractionDigits: number,
+) {
+  return new Intl.NumberFormat(localeCode, {
+    maximumFractionDigits: fractionDigits,
+    minimumFractionDigits: fractionDigits,
+    useGrouping: false,
+  }).format(value);
+}
+
+function formatNumber(value: number, localeCode: LocaleCode) {
+  return new Intl.NumberFormat(localeCode, {
+    maximumFractionDigits: 0,
+    useGrouping: false,
+  }).format(value);
 }
 
 function formatLocalTime(chart: BirthChartResult) {

@@ -73,6 +73,11 @@ The current engine does not use Swiss Ephemeris, JPL DE ephemerides, or external
 
 This is suitable for exercising the end-to-end calculation pipeline and deterministic tests. For production-grade astrology where arc-minute accuracy matters, replace the C++ formula layer with Swiss Ephemeris or a JPL-backed implementation while keeping the CLI JSON contract stable.
 
+The preferred free production path is the
+[JPL/SPICE ephemeris backend](free-jpl-spice-ephemeris.md). It avoids Swiss
+Ephemeris licensing costs while keeping high-accuracy planetary and lunar data
+available offline.
+
 ## Phased Implementation Plan
 
 1. Build the validated birth-details flow and API contract.

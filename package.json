@@ -21,6 +21,7 @@
     "test:engine": "pnpm build:engine && services/astrology-engine/bin/kundli-engine-tests",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "ephemeris:download": "node scripts/download-jpl-spice-assets.mjs",
     "docker:dev": "node --import tsx scripts/start-dev-database.ts",
     "docker:dev:down": "docker compose -f infrastructure/docker/docker-compose.dev.yml down",
     "docker:dev:logs": "docker compose -f infrastructure/docker/docker-compose.dev.yml logs -f",
