@@ -4,6 +4,9 @@
 coverage
 node_modules
 packages/database/generated
+services/astrology-engine/bin
+services/astrology-engine/assets
+services/astrology-engine/vendor
 npm-debug.log*
 pnpm-debug.log*
 .env

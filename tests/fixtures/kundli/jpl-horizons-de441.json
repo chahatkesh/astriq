@@ -1,0 +1,47 @@
+{
+  "source": {
+    "name": "NASA/JPL Horizons",
+    "apiVersion": "1.2",
+    "ephemeris": "DE441",
+    "center": "500@399 geocentric Earth",
+    "ephemerisType": "OBSERVER",
+    "quantities": "31 ObsEcLon/ObsEcLat",
+    "timeType": "UT",
+    "generatedAt": "2026-07-11",
+    "notes": "Reference values are apparent geocentric ecliptic-of-date longitude and latitude in tropical degrees."
+  },
+  "cases": [
+    {
+      "id": "delhi-1990-08-15-0900-ut",
+      "description": "Delhi sample used by the API smoke tests, normalized to 1990-08-15T09:00:00Z.",
+      "input": {
+        "subjectName": "Ada",
+        "birthDate": "1990-08-15",
+        "birthTime": "14:30",
+        "placeName": "Delhi, India",
+        "latitude": 28.6139,
+        "longitude": 77.209,
+        "timeZone": "Asia/Kolkata",
+        "ayanamsha": "lahiri",
+        "houseSystem": "whole_sign"
+      },
+      "expected": {
+        "utcIso": "1990-08-15T09:00:00.000Z",
+        "bodies": {
+          "sun": {
+            "tropicalLongitude": 142.2852446,
+            "latitude": 0.000123,
+            "maxLongitudeErrorDegrees": 0.01,
+            "maxLatitudeErrorDegrees": 0.01
+          },
+          "moon": {
+            "tropicalLongitude": 75.0371149,
+            "latitude": 4.165619,
+            "maxLongitudeErrorDegrees": 0.1,
+            "maxLatitudeErrorDegrees": 0.02
+          }
+        }
+      }
+    }
+  ]
+}

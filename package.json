@@ -9,16 +9,19 @@
   "scripts": {
     "dev": "next dev",
     "dev:procs": "mprocs",
-    "build": "next build",
+    "build": "pnpm build:engine && next build",
+    "build:engine": "node scripts/build-astrology-engine.mjs",
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "pnpm db:generate && tsc --noEmit && pnpm --filter database type-check",
-    "test": "vitest run",
-    "test:unit": "vitest run",
+    "test": "pnpm test:engine && vitest run",
+    "test:unit": "pnpm test:engine && vitest run",
+    "test:engine": "pnpm build:engine && services/astrology-engine/bin/kundli-engine-tests",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "ephemeris:download": "node scripts/download-jpl-spice-assets.mjs",
     "docker:dev": "node --import tsx scripts/start-dev-database.ts",
     "docker:dev:down": "docker compose -f infrastructure/docker/docker-compose.dev.yml down",
     "docker:dev:logs": "docker compose -f infrastructure/docker/docker-compose.dev.yml logs -f",
@@ -40,9 +43,11 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "all-the-cities": "^3.1.0",
     "next": "16.2.10",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "tz-lookup": "^6.1.25"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
