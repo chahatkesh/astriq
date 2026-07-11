@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { localizeTerm } from "@/lib/i18n/glossary";
 import type { KundliMessages } from "@/lib/i18n/kundli-messages";
 import type { LocaleCode } from "@/lib/i18n/locales";
 import type {
@@ -53,6 +54,10 @@ const fallbackCalculationProfile = {
     "This chart was generated before calculation profile metadata was available.",
 } satisfies BirthChartResult["metadata"]["calculationProfile"];
 
+function localizeSign(sign: string, localeCode: LocaleCode) {
+  return localizeTerm(localeCode, sign.toLowerCase());
+}
+
 export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
   const planetByKey = new Map(
     chart.planets.map((planet) => [planet.key, planet] as const),
@@ -99,17 +104,17 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
               localeCode,
             )}`}
             label={messages.chart.lagna}
-            value={chart.ascendant.sign}
+            value={localizeSign(chart.ascendant.sign, localeCode)}
           />
           <SummaryItem
             detail={moon ? formatPlanetDetail(moon, localeCode) : "-"}
             label={messages.chart.moon}
-            value={moon?.sign ?? "-"}
+            value={moon ? localizeSign(moon.sign, localeCode) : "-"}
           />
           <SummaryItem
             detail={sun ? formatPlanetDetail(sun, localeCode) : "-"}
             label={messages.chart.sun}
-            value={sun?.sign ?? "-"}
+            value={sun ? localizeSign(sun.sign, localeCode) : "-"}
           />
         </dl>
 
@@ -123,7 +128,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
                 {messages.chart.lagna}
               </span>
               <span className="mt-1 text-lg font-semibold">
-                {chart.ascendant.sign}
+                {localizeSign(chart.ascendant.sign, localeCode)}
               </span>
               <span className="font-mono text-sm text-foreground/65">
                 {formatDegrees(chart.ascendant.degreeInSign, localeCode)}
@@ -138,6 +143,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
               <HouseCell
                 house={house}
                 key={house.number}
+                localeCode={localeCode}
                 planetByKey={planetByKey}
               />
             ))}
@@ -249,8 +255,12 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
                     className="border-b border-foreground/10"
                     key={planet.key}
                   >
-                    <td className="px-4 py-3 font-medium">{planet.name}</td>
-                    <td className="px-4 py-3">{planet.sign}</td>
+                    <td className="px-4 py-3 font-medium">
+                      {localizeTerm(localeCode, planet.key)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {localizeSign(planet.sign, localeCode)}
+                    </td>
                     <td className="px-4 py-3 font-mono">
                       {formatDegrees(planet.degreeInSign, localeCode)}
                     </td>
@@ -297,9 +307,11 @@ function SummaryItem({
 
 function HouseCell({
   house,
+  localeCode,
   planetByKey,
 }: {
   house: KundliHouse;
+  localeCode: LocaleCode;
   planetByKey: Map<string, PlanetPosition>;
 }) {
   return (
@@ -312,7 +324,9 @@ function HouseCell({
           <span className="font-mono text-xs text-foreground/45">
             H{house.number}
           </span>
-          <span className="truncate text-xs font-medium">{house.sign}</span>
+          <span className="truncate text-xs font-medium">
+            {localizeSign(house.sign, localeCode)}
+          </span>
         </div>
       </div>
 
@@ -323,7 +337,7 @@ function HouseCell({
             <span
               className="border border-foreground/15 px-1.5 py-0.5 font-mono text-[0.68rem] text-foreground/75"
               key={planetKey}
-              title={planet?.name}
+              title={localizeTerm(localeCode, planetKey)}
             >
               {planetLabels[planetKey] ?? planetKey.slice(0, 2)}
               {planet?.retrograde ? "R" : ""}

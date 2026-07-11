@@ -1,7 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { KundliChart } from "@/components/kundli/KundliChart";
+import { usePlaceSearch } from "@/hooks/use-place-search";
 import {
   getKundliMessages,
   type KundliMessages,
@@ -18,9 +20,9 @@ import type {
   BirthChartApiSuccess,
   BirthChartResult,
 } from "@/lib/kundli/types";
+import type { PlaceCandidate } from "@/services/location-service";
 
 type FormState = {
-  subjectName: string;
   birthDate: string;
   birthTime: string;
   placeName: string;
@@ -32,7 +34,6 @@ type FormState = {
 };
 
 const initialForm: FormState = {
-  subjectName: "",
   birthDate: "",
   birthTime: "",
   placeName: "",
@@ -43,16 +44,65 @@ const initialForm: FormState = {
   timezoneOffsetMinutes: "",
 };
 
-export function BirthChartWorkspace() {
-  const [localeCode, setLocaleCode] = useState<LocaleCode>(defaultLocale);
+type BirthChartWorkspaceProps = {
+  initialLocale?: LocaleCode;
+};
+
+export function BirthChartWorkspace({
+  initialLocale = defaultLocale,
+}: BirthChartWorkspaceProps) {
+  const router = useRouter();
+  const [localeCode, setLocaleCode] = useState<LocaleCode>(initialLocale);
   const [form, setForm] = useState<FormState>(initialForm);
   const [chart, setChart] = useState<BirthChartResult | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<PlaceCandidate | null>(
+    null,
+  );
+  const placeSearch = usePlaceSearch(placeQuery);
   const locale = getSupportedLocale(localeCode);
   const messages = getKundliMessages(localeCode);
+
+  function changeLocale(nextLocale: LocaleCode) {
+    setLocaleCode(nextLocale);
+    router.push(`/${nextLocale}`);
+  }
+
+  function selectPlace(candidate: PlaceCandidate) {
+    setSelectedPlace(candidate);
+    setPlaceQuery("");
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next.placeName;
+      delete next.latitude;
+      delete next.longitude;
+      delete next.timeZone;
+      return next;
+    });
+    setForm((current) => ({
+      ...current,
+      placeName: candidate.label,
+      latitude: candidate.latitude.toString(),
+      longitude: candidate.longitude.toString(),
+      timeZone: candidate.timeZone,
+      useManualOffset: false,
+      timezoneOffsetMinutes: "",
+    }));
+  }
+
+  function clearSelectedPlace() {
+    setSelectedPlace(null);
+    setForm((current) => ({
+      ...current,
+      placeName: "",
+      latitude: "",
+      longitude: "",
+    }));
+  }
 
   const timeZones = useMemo(() => {
     const intlWithValues = Intl as typeof Intl & {
@@ -75,7 +125,6 @@ export function BirthChartWorkspace() {
     setFieldErrors({});
 
     const payload = {
-      subjectName: form.subjectName || undefined,
       birthDate: form.birthDate,
       birthTime: form.birthTime,
       placeName: form.placeName,
@@ -120,24 +169,6 @@ export function BirthChartWorkspace() {
     }
   }
 
-  function applyPreset(label: string) {
-    const preset = locationPresets.find((item) => item.label === label);
-
-    if (!preset) {
-      return;
-    }
-
-    setForm((current) => ({
-      ...current,
-      placeName: preset.placeName,
-      latitude: preset.latitude.toString(),
-      longitude: preset.longitude.toString(),
-      timeZone: preset.timeZone,
-      useManualOffset: false,
-      timezoneOffsetMinutes: "",
-    }));
-  }
-
   function useCurrentPosition() {
     if (!navigator.geolocation) {
       setFormError(messages.states.geolocationUnavailable);
@@ -149,9 +180,20 @@ export function BirthChartWorkspace() {
       (position) => {
         const browserTimeZone =
           Intl.DateTimeFormat().resolvedOptions().timeZone || form.timeZone;
+        const placeName = form.placeName || messages.states.currentLocation;
+        setSelectedPlace({
+          id: "current-position",
+          label: placeName,
+          name: placeName,
+          country: "",
+          countryCode: "",
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          timeZone: browserTimeZone,
+        });
         setForm((current) => ({
           ...current,
-          placeName: current.placeName || messages.states.currentLocation,
+          placeName,
           latitude: position.coords.latitude.toFixed(6),
           longitude: position.coords.longitude.toFixed(6),
           timeZone: browserTimeZone,
@@ -195,7 +237,7 @@ export function BirthChartWorkspace() {
               className={inputClassName}
               id="locale"
               onChange={(event) =>
-                setLocaleCode(event.target.value as LocaleCode)
+                changeLocale(event.target.value as LocaleCode)
               }
               value={localeCode}
             >
@@ -218,24 +260,6 @@ export function BirthChartWorkspace() {
             </div>
 
             <form className="grid gap-4 p-4" onSubmit={handleSubmit}>
-              <Field
-                error={fieldErrors.subjectName}
-                id="subjectName"
-                label={messages.form.fullName}
-              >
-                <input
-                  autoComplete="name"
-                  className={inputClassName}
-                  id="subjectName"
-                  name="subjectName"
-                  onChange={(event) =>
-                    setForm({ ...form, subjectName: event.target.value })
-                  }
-                  placeholder={messages.form.optional}
-                  value={form.subjectName}
-                />
-              </Field>
-
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 <Field
                   error={fieldErrors.birthDate}
@@ -274,39 +298,16 @@ export function BirthChartWorkspace() {
                 </Field>
               </div>
 
-              <Field id="locationPreset" label={messages.form.locationPreset}>
-                <select
-                  className={inputClassName}
-                  id="locationPreset"
-                  onChange={(event) => applyPreset(event.target.value)}
-                  value=""
-                >
-                  <option value="">{messages.form.selectPreset}</option>
-                  {locationPresets.map((preset) => (
-                    <option key={preset.label} value={preset.label}>
-                      {preset.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field
+              <PlaceSearchField
                 error={fieldErrors.placeName}
-                id="placeName"
-                label={messages.form.placeName}
-              >
-                <input
-                  autoComplete="address-level2"
-                  className={inputClassName}
-                  id="placeName"
-                  name="placeName"
-                  onChange={(event) =>
-                    setForm({ ...form, placeName: event.target.value })
-                  }
-                  required
-                  value={form.placeName}
-                />
-              </Field>
+                messages={messages}
+                onClear={clearSelectedPlace}
+                onQueryChange={setPlaceQuery}
+                onSelect={selectPlace}
+                query={placeQuery}
+                search={placeSearch}
+                selectedPlace={selectedPlace}
+              />
 
               <button
                 className="border border-foreground/20 px-3 py-2 text-sm font-medium transition hover:bg-foreground hover:text-background disabled:cursor-not-allowed disabled:opacity-60"
@@ -469,6 +470,133 @@ export function BirthChartWorkspace() {
         </div>
       </div>
     </main>
+  );
+}
+
+function PlaceSearchField({
+  error,
+  messages,
+  onClear,
+  onQueryChange,
+  onSelect,
+  query,
+  search,
+  selectedPlace,
+}: {
+  error?: string;
+  messages: KundliMessages;
+  onClear: () => void;
+  onQueryChange: (value: string) => void;
+  onSelect: (candidate: PlaceCandidate) => void;
+  query: string;
+  search: ReturnType<typeof usePlaceSearch>;
+  selectedPlace: PlaceCandidate | null;
+}) {
+  const listId = "place-search-listbox";
+  const candidates = search.results?.candidates ?? [];
+  const showAmbiguous = Boolean(search.results?.ambiguous);
+  const showNoResults =
+    !search.isSearching &&
+    query.trim().length >= 2 &&
+    !search.error &&
+    candidates.length === 0;
+
+  return (
+    <div className="grid gap-1.5">
+      <label className="text-sm font-medium" htmlFor="placeSearch">
+        {messages.placeSearch.label}
+      </label>
+
+      {selectedPlace ? (
+        <div className="flex items-center justify-between gap-2 border border-foreground/20 bg-foreground/3 px-3 py-2 text-sm">
+          <span>
+            <span className="block text-xs text-foreground/55">
+              {messages.placeSearch.resolved}
+            </span>
+            <span className="font-medium">{selectedPlace.label}</span>
+            <span className="block font-mono text-xs text-foreground/55">
+              {selectedPlace.timeZone}
+            </span>
+          </span>
+          <button
+            className="border border-foreground/20 px-2 py-1 text-xs font-medium transition hover:bg-foreground hover:text-background"
+            onClick={onClear}
+            type="button"
+          >
+            {messages.placeSearch.clear}
+          </button>
+        </div>
+      ) : (
+        <>
+          <input
+            aria-controls={listId}
+            aria-expanded={candidates.length > 0}
+            autoComplete="off"
+            className={inputClassName}
+            id="placeSearch"
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder={messages.placeSearch.placeholder}
+            role="combobox"
+            type="text"
+            value={query}
+          />
+          <p className="text-xs text-foreground/55">
+            {messages.placeSearch.hint}
+          </p>
+
+          {search.isSearching ? (
+            <p className="text-xs text-foreground/55">
+              {messages.placeSearch.searching}
+            </p>
+          ) : null}
+
+          {showAmbiguous ? (
+            <p className="text-xs text-amber-700 dark:text-amber-200">
+              {messages.placeSearch.ambiguous}
+            </p>
+          ) : null}
+
+          {candidates.length > 0 ? (
+            <ul
+              className="grid divide-y divide-foreground/10 border border-foreground/20"
+              id={listId}
+              role="listbox"
+            >
+              {candidates.map((candidate) => (
+                <li key={candidate.id} role="option" aria-selected={false}>
+                  <button
+                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition hover:bg-foreground hover:text-background"
+                    onClick={() => onSelect(candidate)}
+                    type="button"
+                  >
+                    <span>{candidate.label}</span>
+                    <span className="font-mono text-xs opacity-60">
+                      {candidate.timeZone}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {showNoResults ? (
+            <p className="text-xs text-foreground/55">
+              {messages.placeSearch.noResults}
+            </p>
+          ) : null}
+
+          {search.error ? (
+            <p className="text-xs text-red-700 dark:text-red-200">
+              {messages.placeSearch.error}
+            </p>
+          ) : null}
+        </>
+      )}
+
+      {error ? (
+        <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+      ) : null}
+    </div>
   );
 }
 
