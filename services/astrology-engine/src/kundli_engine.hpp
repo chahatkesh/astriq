@@ -46,8 +46,21 @@ struct KundliHouse {
   std::vector<std::string> planets;
 };
 
+struct CalculationProfile {
+  std::string id;
+  std::string label;
+  std::string precision;
+  std::string ephemeris;
+  std::string planetPositionSource;
+  std::string ayanamshaModel;
+  std::string houseModel;
+  std::string nodeModel;
+  std::string expectedTolerance;
+};
+
 struct BirthChartMetadata {
   std::string engineVersion;
+  CalculationProfile calculationProfile;
   std::string ayanamsha;
   double ayanamshaDegrees = 0.0;
   std::string zodiac;

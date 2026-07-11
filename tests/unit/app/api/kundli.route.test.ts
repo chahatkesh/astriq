@@ -23,6 +23,7 @@ describe("POST /api/kundli", () => {
 
     expect(response.status).toBe(200);
     expect(body.chart.metadata.utcIso).toBe("1990-08-15T09:00:00.000Z");
+    expect(body.chart.metadata.calculationProfile.precision).toBe("prototype");
     expect(body.chart.ascendant.sign).toBeTruthy();
     expect(body.chart.houses).toHaveLength(12);
   });

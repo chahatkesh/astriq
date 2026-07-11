@@ -25,6 +25,12 @@ describe("generateBirthChart", () => {
     expect(chart.metadata.timezoneOffsetMinutes).toBe(330);
     expect(chart.metadata.ayanamsha).toBe("lahiri");
     expect(chart.metadata.houseSystem).toBe("whole_sign");
+    expect(chart.metadata.calculationProfile).toMatchObject({
+      id: "vedic-lahiri-prototype-v1",
+      precision: "prototype",
+      ephemeris: "deterministic-low-precision-formulae",
+      nodeModel: "Mean lunar nodes",
+    });
     expect(chart.houses).toHaveLength(12);
     expect(chart.planets.map((planet) => planet.key)).toEqual([
       "sun",
