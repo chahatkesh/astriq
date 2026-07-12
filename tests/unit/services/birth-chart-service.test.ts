@@ -24,13 +24,13 @@ describe("generateBirthChart", () => {
     expect(chart.subjectName).toBe("Ada");
     expect(chart.metadata.utcIso).toBe("1990-08-15T09:00:00.000Z");
     expect(chart.metadata.timezoneOffsetMinutes).toBe(330);
-    expect(chart.metadata.engineBackend).toBe("prototype");
+    expect(chart.metadata.engineBackend).toBe("jpl_spice");
     expect(chart.metadata.ayanamsha).toBe("lahiri");
     expect(chart.metadata.houseSystem).toBe("whole_sign");
     expect(chart.metadata.calculationProfile).toMatchObject({
-      id: "vedic-lahiri-prototype-v1",
-      precision: "prototype",
-      ephemeris: "deterministic-low-precision-formulae",
+      id: "vedic-lahiri-jpl-de441-v1",
+      precision: "reference",
+      ephemeris: "NASA/JPL DE441 via js-ephemeris",
       nodeModel: "Mean lunar nodes",
     });
     expect(chart.houses).toHaveLength(12);
@@ -74,7 +74,7 @@ describe("generateBirthChart", () => {
     ).toMatchObject({
       ok: false,
       fields: {
-        engineBackend: "Engine backend must be prototype or jpl_spice.",
+        engineBackend: "Engine backend must be jpl_spice.",
       },
     });
   });

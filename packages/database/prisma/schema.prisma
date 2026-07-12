@@ -8,16 +8,33 @@ datasource db {
 }
 
 model BirthChart {
-  id            String   @id @default(cuid())
-  subjectName   String?
-  birthDateTime DateTime
-  birthPlace    String?
-  latitude      Decimal? @db.Decimal(9, 6)
-  longitude     Decimal? @db.Decimal(9, 6)
-  timezone      String?
-  chartJson     Json?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  userId                String?
+  subjectName           String?
+  birthDateTime         DateTime
+  birthPlace            String?
+  latitude              Decimal? @db.Decimal(9, 6)
+  longitude             Decimal? @db.Decimal(9, 6)
+  timezone              String?
+  timezoneOffsetMinutes Int?
+  localDateTime         String?
+  engineBackend         String?
+  engineVersion         String?
+  chartJson             Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  displayName  String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  charts       BirthChart[]
 }

@@ -5,9 +5,44 @@ import {
   generateBirthChart,
 } from "@/services/birth-chart-service";
 
+import {
+  ChartQuotaError,
+  ensureUserCanGenerateChart,
+  getSessionUserIdFromRequest,
+  getUserById,
+  getUserChartQuota,
+  saveGeneratedChartForUser,
+} from "@/services";
+
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const userId = await getSessionUserIdFromRequest(request);
+  if (!userId) {
+    return Response.json(
+      {
+        error: {
+          message: "Sign in to generate your kundli.",
+          requiresLogin: true,
+        },
+      },
+      { status: 401 },
+    );
+  }
+
+  const user = await getUserById(userId);
+  if (!user) {
+    return Response.json(
+      {
+        error: {
+          message: "Sign in to generate your kundli.",
+          requiresLogin: true,
+        },
+      },
+      { status: 401 },
+    );
+  }
+
   let payload: unknown;
 
   try {
@@ -25,8 +60,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    await ensureUserCanGenerateChart(user.id);
     const chart = await generateBirthChart(payload);
-    return Response.json({ chart });
+    const savedChart = await saveGeneratedChartForUser(user.id, chart);
+    const quota = await getUserChartQuota(user.id);
+
+    return Response.json({ chart, savedChart, quota });
   } catch (error) {
     if (error instanceof BirthChartValidationError) {
       return Response.json(
@@ -37,6 +76,18 @@ export async function POST(request: Request) {
           },
         },
         { status: 400 },
+      );
+    }
+
+    if (error instanceof ChartQuotaError) {
+      return Response.json(
+        {
+          error: {
+            message: error.message,
+            quota: error.quota,
+          },
+        },
+        { status: 403 },
       );
     }
 

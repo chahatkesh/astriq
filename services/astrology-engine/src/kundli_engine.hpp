@@ -13,7 +13,7 @@ struct BirthChartInput {
   std::string timeZone;
   std::string ayanamsha = "lahiri";
   std::string houseSystem = "whole_sign";
-  std::string engineBackend = "prototype";
+  std::string engineBackend = "jpl_spice";
   double latitude = 0.0;
   double longitude = 0.0;
   int timezoneOffsetMinutes = 0;

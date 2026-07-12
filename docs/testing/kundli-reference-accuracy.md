@@ -28,14 +28,12 @@ pada, houses, or divisional charts.
 4. Add the fixture with the source, ephemeris version, query settings, expected
    values, and per-body tolerances.
 5. Keep tolerances honest:
-   - prototype formula tolerances may be wider;
-   - Swiss/JPL-backed profiles should tighten to arc-minute or better;
+   - JPL-backed profiles should tighten to arc-minute or better;
    - house and ascendant fixtures should use their own tolerances because they
      depend on location, time scale, and house convention.
 
 ## Why This Exists
 
-The current engine is useful for the end-to-end product pipeline, but it is not
-the final accuracy target. These fixtures give us a tripwire: every future
-engine swap or formula change must show whether accuracy improved, regressed, or
-changed because of an intentional calculation-profile decision.
+These fixtures are the tripwire for production-grade accuracy. Every future
+backend swap or formula change must show whether accuracy improved, regressed,
+or changed because of an intentional calculation-profile decision.

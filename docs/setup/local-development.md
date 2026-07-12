@@ -38,4 +38,11 @@ pnpm db:deploy
 postgresql://postgres:postgres@localhost:5432/birth_chart_generator_dev
 ```
 
+Auth and generation quota defaults are also defined in
+[.env.example](../../.env.example):
+
+- `AUTH_SESSION_SECRET`
+- `MAX_CHARTS_PER_USER`
+- `KUNDLI_ENGINE_BACKEND=jpl_spice`
+
 The Prisma schema, migrations, seed, and client boundary live in [packages/database/](../../packages/database/). App and service code should import `db` from [lib/db.ts](../../lib/db.ts).

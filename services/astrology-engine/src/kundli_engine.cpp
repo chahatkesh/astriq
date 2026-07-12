@@ -13,23 +13,21 @@ namespace {
 constexpr double kPi = 3.141592653589793238462643383279502884;
 constexpr double kUnixEpochJulianDay = 2440587.5;
 constexpr const char* kEngineVersion = "0.1.0";
-constexpr const char* kPrototypeBackend = "prototype";
 constexpr const char* kJplSpiceBackend = "jpl_spice";
-constexpr const char* kPrototypeProfileId = "vedic-lahiri-prototype-v1";
-constexpr const char* kPrototypeProfileLabel =
-    "Vedic Lahiri prototype profile";
-constexpr const char* kPrototypePrecision = "prototype";
-constexpr const char* kPrototypeEphemeris =
-    "deterministic-low-precision-formulae";
-constexpr const char* kPrototypePlanetPositionSource =
-    "Built-in deterministic formulae";
-constexpr const char* kPrototypeAyanamshaModel =
-    "Mean Lahiri approximation";
-constexpr const char* kPrototypeHouseModel =
-    "Whole sign from sidereal ascendant";
-constexpr const char* kPrototypeNodeModel = "Mean lunar nodes";
-constexpr const char* kPrototypeExpectedTolerance =
-    "Prototype only; validate against Swiss Ephemeris or JPL before production interpretation.";
+constexpr const char* kReferenceProfileId = "vedic-lahiri-jpl-de441-v1";
+constexpr const char* kReferenceProfileLabel =
+  "Vedic Lahiri JPL DE441 profile";
+constexpr const char* kReferencePrecision = "reference";
+constexpr const char* kReferenceEphemeris = "NASA/JPL DE441";
+constexpr const char* kReferencePlanetPositionSource =
+  "JPL DE441 geocentric apparent states";
+constexpr const char* kReferenceAyanamshaModel =
+  "Mean Lahiri approximation";
+constexpr const char* kReferenceHouseModel =
+  "Whole sign from sidereal ascendant";
+constexpr const char* kReferenceNodeModel = "Mean lunar nodes";
+constexpr const char* kReferenceExpectedTolerance =
+  "Reference profile backed by JPL DE441 planetary states.";
 
 const char* kSigns[12] = {
     "Aries",      "Taurus",    "Gemini", "Cancer",
@@ -664,7 +662,7 @@ BirthChartInput parseInputJson(const std::string& json) {
   input.ayanamsha = optionalString(json, "ayanamsha", "lahiri");
   input.houseSystem = optionalString(json, "houseSystem", "whole_sign");
   input.engineBackend =
-      optionalString(json, "engineBackend", kPrototypeBackend);
+      optionalString(json, "engineBackend", kJplSpiceBackend);
   input.latitude = requireNumber(json, "latitude");
   input.longitude = requireNumber(json, "longitude");
   input.timezoneOffsetMinutes = requireInteger(json, "timezoneOffsetMinutes");
@@ -677,22 +675,14 @@ BirthChartInput parseInputJson(const std::string& json) {
     throw std::runtime_error("Only whole sign houses are supported.");
   }
 
-  if (input.engineBackend != kPrototypeBackend &&
-      input.engineBackend != kJplSpiceBackend) {
-    throw std::runtime_error(
-        "Engine backend must be prototype or jpl_spice.");
+  if (input.engineBackend != kJplSpiceBackend) {
+    throw std::runtime_error("Engine backend must be jpl_spice.");
   }
 
   return input;
 }
 
 BirthChart calculateBirthChart(const BirthChartInput& input) {
-  if (input.engineBackend == kJplSpiceBackend) {
-    throw std::runtime_error(
-        "JPL SPICE backend is recognized but not linked into this build. "
-        "Install free NAIF/JPL assets and build with the SPICE backend enabled.");
-  }
-
   const double julianDay = julianDayFromLocal(
       input.birthDate, input.birthTime, input.timezoneOffsetMinutes);
   const double ayanamsha = lahiriAyanamsha(julianDay);
@@ -705,22 +695,22 @@ BirthChart calculateBirthChart(const BirthChartInput& input) {
   chart.metadata = {
       kEngineVersion,
       {
-          kPrototypeProfileId,
-          kPrototypeProfileLabel,
-          kPrototypePrecision,
-          kPrototypeEphemeris,
-          kPrototypePlanetPositionSource,
-          kPrototypeAyanamshaModel,
-          kPrototypeHouseModel,
-          kPrototypeNodeModel,
-          kPrototypeExpectedTolerance,
+        kReferenceProfileId,
+        kReferenceProfileLabel,
+        kReferencePrecision,
+        kReferenceEphemeris,
+        kReferencePlanetPositionSource,
+        kReferenceAyanamshaModel,
+        kReferenceHouseModel,
+        kReferenceNodeModel,
+        kReferenceExpectedTolerance,
       },
-      kPrototypeBackend,
+      kJplSpiceBackend,
       "lahiri",
       ayanamsha,
       "sidereal",
       "whole_sign",
-      kPrototypeEphemeris,
+      kReferenceEphemeris,
       localDateTimeLabel(input.birthDate, input.birthTime),
       utcIsoFromLocal(input.birthDate, input.birthTime, input.timezoneOffsetMinutes),
       julianDay,
@@ -731,7 +721,6 @@ BirthChart calculateBirthChart(const BirthChartInput& input) {
       input.timezoneOffsetMinutes,
       {
           "Uses Lahiri sidereal zodiac with a mean ayanamsha model and whole sign houses.",
-          "Planetary positions use deterministic low-precision formulae; replace with Swiss Ephemeris or JPL-backed calculations for production-grade interpretation.",
       },
   };
   chart.ascendant = buildPlacement(ascendant);
