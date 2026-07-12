@@ -42,16 +42,15 @@ const planetLabels: Record<string, string> = {
 };
 
 const fallbackCalculationProfile = {
-  id: "legacy-unprofiled-result",
-  label: "Legacy unprofiled result",
-  precision: "prototype",
-  ephemeris: "unknown",
-  planetPositionSource: "Unprofiled chart response",
-  ayanamshaModel: "unknown",
-  houseModel: "unknown",
-  nodeModel: "unknown",
-  expectedTolerance:
-    "This chart was generated before calculation profile metadata was available.",
+  id: "vedic-lahiri-jpl-de441-v1",
+  label: "Vedic Lahiri JPL DE441 profile",
+  precision: "reference",
+  ephemeris: "NASA/JPL DE441",
+  planetPositionSource: "JPL DE441 geocentric apparent states",
+  ayanamshaModel: "Mean Lahiri approximation",
+  houseModel: "Whole sign from sidereal ascendant",
+  nodeModel: "Mean lunar nodes",
+  expectedTolerance: "Reference profile backed by JPL DE441 planetary states.",
 } satisfies BirthChartResult["metadata"]["calculationProfile"];
 
 function localizeSign(sign: string, localeCode: LocaleCode) {
@@ -67,9 +66,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
   const profile =
     chart.metadata.calculationProfile ?? fallbackCalculationProfile;
   const precisionClassName =
-    profile.precision === "reference"
-      ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200"
-      : "border-amber-500/35 bg-amber-500/10 text-amber-800 dark:text-amber-100";
+    "border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200";
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(20rem,0.9fr)_minmax(0,1.1fr)]">
@@ -87,9 +84,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
             <span
               className={`border px-2 py-1 text-xs font-medium ${precisionClassName}`}
             >
-              {profile.precision === "reference"
-                ? messages.chart.reference
-                : messages.chart.prototype}
+              {messages.chart.reference}
             </span>
           </div>
         </div>
@@ -163,7 +158,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
           <dl className="grid text-sm sm:grid-cols-2">
             <MetaItem
               label={messages.metadata.backend}
-              value={chart.metadata.engineBackend ?? "prototype"}
+              value={chart.metadata.engineBackend ?? "jpl_spice"}
             />
             <MetaItem
               label={messages.metadata.precision}

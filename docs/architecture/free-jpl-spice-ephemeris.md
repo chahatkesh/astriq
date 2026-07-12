@@ -42,17 +42,16 @@ The engine accepts:
 
 ```json
 {
-  "engineBackend": "prototype"
+  "engineBackend": "jpl_spice"
 }
 ```
 
 Supported values:
 
-- `prototype`: current built-in deterministic formulae.
-- `jpl_spice`: reserved free high-accuracy backend using NAIF/JPL assets.
+- `jpl_spice`: the production backend using JPL DE441 planetary states.
 
-Until the SPICE backend is linked into the native engine, `jpl_spice` requests
-fail clearly instead of silently falling back to prototype calculations.
+The app-level contract keeps `jpl_spice` as the only accepted backend so
+generation behavior is deterministic and versioned.
 
 ## Target Calculation Profile
 

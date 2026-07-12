@@ -6,26 +6,20 @@ The app uses one Next.js App Router surface in `app/`. Route handlers stay thin 
 
 The Kundli flow follows that structure:
 
-1. `components/kundli/BirthChartWorkspace.tsx` collects birth details and posts JSON to `/api/kundli`. Birthplace entry uses a search box backed by `/api/places`, which autofills coordinates and the IANA time zone and prompts the user to disambiguate when a name matches multiple places.
-2. `app/api/kundli/route.ts` parses the request and calls `generateBirthChart`.
-3. `services/birth-chart-service.ts` validates input, normalizes location data, and invokes the native engine.
-4. `services/location-service.ts` resolves the time-zone offset for the birth wall time using the runtime IANA time-zone database, and provides deterministic offline birthplace search (`searchPlaces`) via `lib/kundli/place-index.ts`. Search runs over the offline `all-the-cities` dataset (~135k cities, population > 1000) and derives each candidate's IANA time zone from its coordinates with `tz-lookup`, so no external geocoding provider, API key, or network is required. Both packages are declared in `serverExternalPackages` because they read bundled binary data files at runtime.
-5. `services/astrology-engine/bin/kundli-engine` performs the C++ calculation and returns structured JSON.
+1. Guests start on `app/[locale]/page.tsx`, which shows a landing form for Date, Time, and Location placeholders and redirects generation intent through login.
+2. Authenticated users work in `app/[locale]/dashboard/page.tsx`, where `components/kundli/BirthChartWorkspace.tsx` submits chart generation requests and shows saved chart history.
+3. `app/api/kundli/route.ts` enforces authentication, checks per-user quota from `MAX_CHARTS_PER_USER`, then calls `generateBirthChart`.
+4. `services/birth-chart-service.ts` validates input, normalizes location data, and computes JPL-grade planetary positions via `js-ephemeris` (`jpl_spice` backend contract).
+5. `services/user-chart-service.ts` persists generated charts to `packages/database` and returns updated quota state.
 6. `components/kundli/KundliChart.tsx` renders houses, signs, planets, nakshatras, degrees, and retrograde status, localizing astrology vocabulary through `lib/i18n/glossary.ts`.
 
-## C++ Integration Method
+## Calculation Backend
 
-The C++ engine is integrated as a command-line executable invoked by the Node.js service layer.
+The production backend contract is `jpl_spice`.
 
-This fits the current repo because:
-
-- it keeps the calculation engine independent from React and route handlers;
-- it avoids native Node binding ABI friction;
-- it works in the production Node runtime and standalone Docker output;
-- it is easy to unit-test directly with a native test binary;
-- it keeps a clean path to replace the internal formulae with Swiss Ephemeris or JPL-backed code later.
-
-The production Docker build compiles the engine in the builder stage and copies only the binary into the runner image.
+`services/birth-chart-service.ts` resolves geocentric planetary states from
+JPL DE441 via `js-ephemeris`, then applies Lahiri ayanamsha and whole-sign
+house placement logic to produce the app chart JSON contract.
 
 ## Engine Input Contract
 
@@ -69,14 +63,9 @@ The engine writes one JSON object to stdout. It includes:
 
 ## Accuracy Notes
 
-The current engine does not use Swiss Ephemeris, JPL DE ephemerides, or external data files. It uses deterministic low-precision astronomical formulae for planetary longitude and an approximate Lahiri ayanamsha model.
-
-This is suitable for exercising the end-to-end calculation pipeline and deterministic tests. For production-grade astrology where arc-minute accuracy matters, replace the C++ formula layer with Swiss Ephemeris or a JPL-backed implementation while keeping the CLI JSON contract stable.
-
-The preferred free production path is the
-[JPL/SPICE ephemeris backend](free-jpl-spice-ephemeris.md). It avoids Swiss
-Ephemeris licensing costs while keeping high-accuracy planetary and lunar data
-available offline.
+The runtime chart service uses JPL DE441-backed planetary states through the
+`jpl_spice` contract. Accuracy fixtures should continue tightening around this
+profile and any future backend adjustment must update fixtures and metadata.
 
 ## Phased Implementation Plan
 
@@ -84,6 +73,6 @@ available offline.
 2. Normalize IANA time-zone data at the service boundary.
 3. Compile and test the native C++ CLI engine.
 4. Render the visual Kundli and tabular planetary positions.
-5. Add persistence for generated charts through `packages/database`.
-6. Replace low-precision formulae with a production ephemeris backend.
+5. Add retention and account-level chart management capabilities on top of saved charts.
+6. Expand accuracy fixtures for additional bodies and timezone edge windows.
 7. Add Navamsa, dashas, yogas, aspects, doshas, matching, and report generation as separate service capabilities.

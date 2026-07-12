@@ -1,6 +1,6 @@
 export type AyanamshaMode = "lahiri";
 export type HouseSystem = "whole_sign";
-export type EngineBackend = "prototype" | "jpl_spice";
+export type EngineBackend = "jpl_spice";
 
 export type BirthChartFormPayload = {
   subjectName?: string;
@@ -58,7 +58,7 @@ export type KundliHouse = {
   planets: string[];
 };
 
-export type CalculationPrecision = "prototype" | "reference";
+export type CalculationPrecision = "reference";
 
 export type CalculationProfile = {
   id: string;
@@ -102,11 +102,30 @@ export type BirthChartResult = {
 
 export type BirthChartApiSuccess = {
   chart: BirthChartResult;
+  quota: ChartQuota;
+  savedChart: UserChartSummary;
+};
+
+export type ChartQuota = {
+  limit: number;
+  used: number;
+  remaining: number;
+};
+
+export type UserChartSummary = {
+  id: string;
+  createdAt: string;
+  subjectName?: string;
+  placeName: string;
+  localDateTime: string;
+  chart: BirthChartResult;
 };
 
 export type BirthChartApiError = {
   error: {
     message: string;
     fields?: Record<string, string>;
+    requiresLogin?: boolean;
+    quota?: ChartQuota;
   };
 };

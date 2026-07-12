@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { KundliChart } from "@/components/kundli/KundliChart";
 import { usePlaceSearch } from "@/hooks/use-place-search";
+import { getDefaultPostAuthPath } from "@/lib/auth/redirect";
 import { AppStrings, type AppStringsDictionary } from "@/lib/i18n/app-strings";
 import {
   defaultLocale,
@@ -11,11 +12,17 @@ import {
   supportedLocales,
   type LocaleCode,
 } from "@/lib/i18n/locales";
+import {
+  decodeDraftContext,
+  encodeDraftContext,
+} from "@/lib/kundli/draft-context";
 import { locationPresets } from "@/lib/kundli/location-presets";
 import type {
   BirthChartApiError,
   BirthChartApiSuccess,
   BirthChartResult,
+  ChartQuota,
+  UserChartSummary,
 } from "@/lib/kundli/types";
 import type { PlaceCandidate } from "@/services/location-service";
 
@@ -26,28 +33,45 @@ type FormState = {
   latitude: string;
   longitude: string;
   timeZone: string;
+  timezoneOffsetMinutes: string;
 };
 
-const initialForm: FormState = {
+const defaultForm: FormState = {
   birthDate: "",
   birthTime: "",
   placeName: "",
   latitude: "",
   longitude: "",
   timeZone: "Asia/Kolkata",
+  timezoneOffsetMinutes: "",
 };
 
 type BirthChartWorkspaceProps = {
   initialLocale?: LocaleCode;
+  authenticated?: boolean;
+  userDisplayName?: string;
+  initialDraftToken?: string;
+  initialChartHistory?: UserChartSummary[];
+  initialQuota?: ChartQuota;
 };
 
 export function BirthChartWorkspace({
   initialLocale = defaultLocale,
+  authenticated = false,
+  userDisplayName,
+  initialDraftToken,
+  initialChartHistory = [],
+  initialQuota,
 }: BirthChartWorkspaceProps) {
   const router = useRouter();
   const [localeCode, setLocaleCode] = useState<LocaleCode>(initialLocale);
-  const [form, setForm] = useState<FormState>(initialForm);
+  const [form, setForm] = useState<FormState>(() =>
+    buildInitialForm(initialDraftToken),
+  );
   const [chart, setChart] = useState<BirthChartResult | null>(null);
+  const [chartHistory, setChartHistory] =
+    useState<UserChartSummary[]>(initialChartHistory);
+  const [quota, setQuota] = useState<ChartQuota | null>(initialQuota ?? null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,9 +85,14 @@ export function BirthChartWorkspace({
   const messages = AppStrings.forLocale(localeCode);
   const isLocationLocked = selectedPlace !== null;
 
+  const hasQuota = !authenticated || !quota || quota.remaining > 0;
+
   function changeLocale(nextLocale: LocaleCode) {
     setLocaleCode(nextLocale);
-    router.push(`/${nextLocale}`);
+    const target = authenticated
+      ? `/${nextLocale}/dashboard`
+      : `/${nextLocale}`;
+    router.push(target);
   }
 
   function selectPlace(candidate: PlaceCandidate) {
@@ -93,6 +122,7 @@ export function BirthChartWorkspace({
       placeName: "",
       latitude: "",
       longitude: "",
+      timezoneOffsetMinutes: "",
     }));
   }
 
@@ -112,6 +142,12 @@ export function BirthChartWorkspace({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!authenticated) {
+      redirectToLoginWithDraft();
+      return;
+    }
+
     setIsSubmitting(true);
     setFormError(null);
     setFieldErrors({});
@@ -123,9 +159,12 @@ export function BirthChartWorkspace({
       latitude: Number(form.latitude),
       longitude: Number(form.longitude),
       timeZone: form.timeZone,
+      timezoneOffsetMinutes: form.timezoneOffsetMinutes.trim()
+        ? Number(form.timezoneOffsetMinutes)
+        : undefined,
       ayanamsha: "lahiri",
       houseSystem: "whole_sign",
-      engineBackend: "prototype",
+      engineBackend: "jpl_spice",
     };
 
     try {
@@ -136,26 +175,58 @@ export function BirthChartWorkspace({
         },
         body: JSON.stringify(payload),
       });
+
       const body = (await response.json()) as
         BirthChartApiSuccess | BirthChartApiError;
 
-      if ("error" in body) {
-        setFormError(body.error.message);
-        setFieldErrors(body.error.fields ?? {});
-        return;
-      }
+      if (!response.ok || "error" in body) {
+        const errorBody = "error" in body ? body.error : undefined;
 
-      if (!response.ok) {
-        setFormError(messages.states.requestFailed);
+        if (response.status === 401 || errorBody?.requiresLogin) {
+          redirectToLoginWithDraft();
+          return;
+        }
+
+        setFormError(errorBody?.message ?? messages.states.requestFailed);
+        setFieldErrors(errorBody?.fields ?? {});
+
+        if (errorBody?.quota) {
+          setQuota(errorBody.quota);
+        }
+
         return;
       }
 
       setChart(body.chart);
+      setQuota(body.quota);
+      setChartHistory((current) => {
+        const withoutDuplicate = current.filter(
+          (item) => item.id !== body.savedChart.id,
+        );
+        return [body.savedChart, ...withoutDuplicate];
+      });
     } catch {
       setFormError(messages.states.requestFailed);
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push(`/${localeCode}`);
+    router.refresh();
+  }
+
+  function redirectToLoginWithDraft() {
+    const draft = encodeDraftContext(form);
+    const nextPath = getDefaultPostAuthPath(localeCode);
+    const query = new URLSearchParams({
+      next: nextPath,
+      draft,
+    });
+
+    router.push(`/${localeCode}/login?${query.toString()}`);
   }
 
   function useCurrentPosition() {
@@ -204,7 +275,7 @@ export function BirthChartWorkspace({
       lang={locale.code}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-2 border-b border-foreground/15 pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <header className="flex flex-col gap-3 border-b border-foreground/15 pb-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
               {messages.app.eyebrow}
@@ -212,8 +283,14 @@ export function BirthChartWorkspace({
             <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">
               {messages.app.title}
             </h1>
+            {authenticated && userDisplayName ? (
+              <p className="mt-2 text-sm text-foreground/65">
+                Welcome, {userDisplayName}
+              </p>
+            ) : null}
           </div>
-          <div className="grid gap-2 sm:min-w-52">
+
+          <div className="grid gap-2 sm:min-w-60">
             <label
               className="text-xs uppercase text-foreground/45"
               htmlFor="locale"
@@ -234,9 +311,21 @@ export function BirthChartWorkspace({
                 </option>
               ))}
             </select>
-            <p className="font-mono text-xs text-foreground/60">
-              {messages.app.subtitle}
-            </p>
+
+            {authenticated ? (
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-mono text-xs text-foreground/60">
+                  Remaining charts: {quota?.remaining ?? "-"}
+                </p>
+                <button
+                  className="border border-foreground/20 px-2 py-1 text-xs font-medium transition hover:bg-foreground hover:text-background"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  Log out
+                </button>
+              </div>
+            ) : null}
           </div>
         </header>
 
@@ -244,6 +333,11 @@ export function BirthChartWorkspace({
           <section className="border border-foreground/15 bg-background">
             <div className="border-b border-foreground/15 px-4 py-3">
               <h2 className="text-base font-semibold">{messages.form.title}</h2>
+              {authenticated && quota ? (
+                <p className="mt-1 text-xs text-foreground/60">
+                  {quota.used} of {quota.limit} charts used.
+                </p>
+              ) : null}
             </div>
 
             <form className="grid gap-4 p-4" onSubmit={handleSubmit}>
@@ -379,6 +473,27 @@ export function BirthChartWorkspace({
                 </datalist>
               </Field>
 
+              <Field
+                error={fieldErrors.timezoneOffsetMinutes}
+                id="timezoneOffsetMinutes"
+                label={messages.form.offsetMinutes}
+              >
+                <input
+                  className={inputClassName}
+                  id="timezoneOffsetMinutes"
+                  name="timezoneOffsetMinutes"
+                  onChange={(event) =>
+                    setForm({
+                      ...form,
+                      timezoneOffsetMinutes: event.target.value,
+                    })
+                  }
+                  placeholder="Optional, e.g. 330 or -300"
+                  type="number"
+                  value={form.timezoneOffsetMinutes}
+                />
+              </Field>
+
               {formError ? (
                 <p
                   aria-live="polite"
@@ -388,9 +503,15 @@ export function BirthChartWorkspace({
                 </p>
               ) : null}
 
+              {authenticated && !hasQuota ? (
+                <p className="border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-100">
+                  You have reached your chart generation limit.
+                </p>
+              ) : null}
+
               <button
                 className="bg-foreground px-4 py-3 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasQuota}
                 type="submit"
               >
                 {isSubmitting ? messages.form.submitting : messages.form.submit}
@@ -410,11 +531,34 @@ export function BirthChartWorkspace({
             {!isSubmitting && !chart ? (
               <EmptyState messages={messages} />
             ) : null}
+
+            {authenticated ? (
+              <ChartHistoryPanel
+                history={chartHistory}
+                onSelectChart={(selected) => setChart(selected.chart)}
+              />
+            ) : null}
           </section>
         </div>
       </div>
     </main>
   );
+}
+
+function buildInitialForm(draftToken?: string) {
+  const draft = decodeDraftContext(draftToken) ?? {};
+
+  return {
+    ...defaultForm,
+    birthDate: draft.birthDate ?? defaultForm.birthDate,
+    birthTime: draft.birthTime ?? defaultForm.birthTime,
+    placeName: draft.placeName ?? defaultForm.placeName,
+    latitude: draft.latitude ?? defaultForm.latitude,
+    longitude: draft.longitude ?? defaultForm.longitude,
+    timeZone: draft.timeZone ?? defaultForm.timeZone,
+    timezoneOffsetMinutes:
+      draft.timezoneOffsetMinutes ?? defaultForm.timezoneOffsetMinutes,
+  } satisfies FormState;
 }
 
 function PlaceSearchField({
@@ -507,7 +651,7 @@ function PlaceSearchField({
               role="listbox"
             >
               {candidates.map((candidate) => (
-                <li key={candidate.id} role="option" aria-selected={false}>
+                <li key={candidate.id} aria-selected={false} role="option">
                   <button
                     className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition hover:bg-foreground hover:text-background"
                     onClick={() => onSelect(candidate)}
@@ -574,7 +718,7 @@ function Field({
 
 function LoadingState({ messages }: { messages: AppStringsDictionary }) {
   return (
-    <div className="grid min-h-[24rem] place-items-center border border-foreground/15">
+    <div className="grid min-h-96 place-items-center border border-foreground/15">
       <div className="text-center">
         <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/45">
           {messages.states.loadingEyebrow}
@@ -589,7 +733,7 @@ function LoadingState({ messages }: { messages: AppStringsDictionary }) {
 
 function EmptyState({ messages }: { messages: AppStringsDictionary }) {
   return (
-    <div className="grid min-h-[24rem] place-items-center border border-dashed border-foreground/20 px-6 text-center">
+    <div className="grid min-h-96 place-items-center border border-dashed border-foreground/20 px-6 text-center">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/45">
           {messages.states.emptyEyebrow}
@@ -600,6 +744,63 @@ function EmptyState({ messages }: { messages: AppStringsDictionary }) {
       </div>
     </div>
   );
+}
+
+function ChartHistoryPanel({
+  history,
+  onSelectChart,
+}: {
+  history: UserChartSummary[];
+  onSelectChart: (item: UserChartSummary) => void;
+}) {
+  return (
+    <section className="mt-6 border border-foreground/15 bg-background">
+      <div className="border-b border-foreground/15 px-4 py-3">
+        <h2 className="text-base font-semibold">Saved charts</h2>
+      </div>
+
+      {history.length === 0 ? (
+        <p className="px-4 py-6 text-sm text-foreground/60">
+          No saved charts yet.
+        </p>
+      ) : (
+        <ul className="divide-y divide-foreground/10">
+          {history.map((item) => (
+            <li key={item.id}>
+              <button
+                className="grid w-full gap-1 px-4 py-3 text-left transition hover:bg-foreground/5"
+                onClick={() => onSelectChart(item)}
+                type="button"
+              >
+                <span className="text-sm font-medium">
+                  {item.subjectName || "Unnamed chart"}
+                </span>
+                <span className="text-xs text-foreground/60">
+                  {item.placeName} | {item.localDateTime}
+                </span>
+                <span className="font-mono text-xs text-foreground/45">
+                  Saved {formatSavedAt(item.createdAt)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function formatSavedAt(createdAt: string) {
+  const timestamp = Date.parse(createdAt);
+
+  if (Number.isNaN(timestamp)) {
+    return createdAt;
+  }
+
+  return `${new Date(timestamp)
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ")} UTC`;
 }
 
 const inputClassName =
