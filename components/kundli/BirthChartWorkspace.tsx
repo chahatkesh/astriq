@@ -4,10 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { KundliChart } from "@/components/kundli/KundliChart";
 import { usePlaceSearch } from "@/hooks/use-place-search";
-import {
-  getKundliMessages,
-  type KundliMessages,
-} from "@/lib/i18n/kundli-messages";
+import { AppStrings, type AppStringsDictionary } from "@/lib/i18n/app-strings";
 import {
   defaultLocale,
   getSupportedLocale,
@@ -29,8 +26,6 @@ type FormState = {
   latitude: string;
   longitude: string;
   timeZone: string;
-  useManualOffset: boolean;
-  timezoneOffsetMinutes: string;
 };
 
 const initialForm: FormState = {
@@ -40,8 +35,6 @@ const initialForm: FormState = {
   latitude: "",
   longitude: "",
   timeZone: "Asia/Kolkata",
-  useManualOffset: false,
-  timezoneOffsetMinutes: "",
 };
 
 type BirthChartWorkspaceProps = {
@@ -65,7 +58,8 @@ export function BirthChartWorkspace({
   );
   const placeSearch = usePlaceSearch(placeQuery);
   const locale = getSupportedLocale(localeCode);
-  const messages = getKundliMessages(localeCode);
+  const messages = AppStrings.forLocale(localeCode);
+  const isLocationLocked = selectedPlace !== null;
 
   function changeLocale(nextLocale: LocaleCode) {
     setLocaleCode(nextLocale);
@@ -89,8 +83,6 @@ export function BirthChartWorkspace({
       latitude: candidate.latitude.toString(),
       longitude: candidate.longitude.toString(),
       timeZone: candidate.timeZone,
-      useManualOffset: false,
-      timezoneOffsetMinutes: "",
     }));
   }
 
@@ -131,9 +123,6 @@ export function BirthChartWorkspace({
       latitude: Number(form.latitude),
       longitude: Number(form.longitude),
       timeZone: form.timeZone,
-      timezoneOffsetMinutes: form.useManualOffset
-        ? Number(form.timezoneOffsetMinutes)
-        : undefined,
       ayanamsha: "lahiri",
       houseSystem: "whole_sign",
       engineBackend: "prototype",
@@ -197,8 +186,6 @@ export function BirthChartWorkspace({
           latitude: position.coords.latitude.toFixed(6),
           longitude: position.coords.longitude.toFixed(6),
           timeZone: browserTimeZone,
-          useManualOffset: false,
-          timezoneOffsetMinutes: "",
         }));
         setIsLocating(false);
       },
@@ -328,6 +315,7 @@ export function BirthChartWorkspace({
                 >
                   <input
                     className={inputClassName}
+                    disabled={isLocationLocked}
                     id="latitude"
                     inputMode="decimal"
                     max="90"
@@ -350,6 +338,7 @@ export function BirthChartWorkspace({
                 >
                   <input
                     className={inputClassName}
+                    disabled={isLocationLocked}
                     id="longitude"
                     inputMode="decimal"
                     max="180"
@@ -373,6 +362,7 @@ export function BirthChartWorkspace({
               >
                 <input
                   className={inputClassName}
+                  disabled={isLocationLocked}
                   id="timeZone"
                   list="time-zone-options"
                   name="timeZone"
@@ -388,52 +378,6 @@ export function BirthChartWorkspace({
                   ))}
                 </datalist>
               </Field>
-
-              <label className="flex items-start gap-3 border border-foreground/15 p-3 text-sm">
-                <input
-                  checked={form.useManualOffset}
-                  className="mt-1 h-4 w-4 accent-foreground"
-                  onChange={(event) =>
-                    setForm({
-                      ...form,
-                      useManualOffset: event.target.checked,
-                    })
-                  }
-                  type="checkbox"
-                />
-                <span>
-                  <span className="block font-medium">
-                    {messages.form.manualOffset}
-                  </span>
-                </span>
-              </label>
-
-              {form.useManualOffset ? (
-                <Field
-                  error={fieldErrors.timezoneOffsetMinutes}
-                  id="timezoneOffsetMinutes"
-                  label={messages.form.offsetMinutes}
-                >
-                  <input
-                    className={inputClassName}
-                    id="timezoneOffsetMinutes"
-                    inputMode="numeric"
-                    max={14 * 60}
-                    min={-14 * 60}
-                    name="timezoneOffsetMinutes"
-                    onChange={(event) =>
-                      setForm({
-                        ...form,
-                        timezoneOffsetMinutes: event.target.value,
-                      })
-                    }
-                    required
-                    step="1"
-                    type="number"
-                    value={form.timezoneOffsetMinutes}
-                  />
-                </Field>
-              ) : null}
 
               {formError ? (
                 <p
@@ -484,7 +428,7 @@ function PlaceSearchField({
   selectedPlace,
 }: {
   error?: string;
-  messages: KundliMessages;
+  messages: AppStringsDictionary;
   onClear: () => void;
   onQueryChange: (value: string) => void;
   onSelect: (candidate: PlaceCandidate) => void;
@@ -628,7 +572,7 @@ function Field({
   );
 }
 
-function LoadingState({ messages }: { messages: KundliMessages }) {
+function LoadingState({ messages }: { messages: AppStringsDictionary }) {
   return (
     <div className="grid min-h-[24rem] place-items-center border border-foreground/15">
       <div className="text-center">
@@ -643,7 +587,7 @@ function LoadingState({ messages }: { messages: KundliMessages }) {
   );
 }
 
-function EmptyState({ messages }: { messages: KundliMessages }) {
+function EmptyState({ messages }: { messages: AppStringsDictionary }) {
   return (
     <div className="grid min-h-[24rem] place-items-center border border-dashed border-foreground/20 px-6 text-center">
       <div>

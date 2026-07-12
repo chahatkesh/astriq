@@ -14,9 +14,10 @@ languages.
   Bengali scripts, falling back to the base Latin UI font.
 - UI dictionary fallback: unsupported or incomplete dictionaries fall back to
   English.
-- Hindi: first complete draft dictionary and glossary for the Kundli workspace.
-- Other Indian-language dictionaries: registered and ready for translation
-  review.
+- Kundli workspace dictionaries and glossary: first-pass draft coverage across
+  all supported locale codes.
+- Related languages share draft dictionaries where native-language review is
+  still pending.
 
 ## Locale Registry
 
@@ -44,7 +45,10 @@ middleware and the `app/[locale]` segment.
 
 ## Message Dictionaries
 
-Kundli workspace messages live in `lib/i18n/kundli-messages.ts`.
+Kundli workspace UI strings live in `lib/i18n/app-strings.ts`.
+
+`AppStrings.forLocale(localeCode)` resolves the locale dictionary, applying
+draft locale overrides and falling back to English only for unknown locales.
 
 Do not translate engine keys such as `sun`, `moon`, `aries`, or `ashwini` in the
 engine output. Keep those as stable IDs and localize labels at the UI layer.
@@ -54,7 +58,7 @@ engine output. Keep those as stable IDs and localize labels at the UI layer.
 Stable astrology term IDs live in `lib/i18n/glossary.ts`. The engine emits
 English IDs (`sun`, `aries`, `nakshatra`) and the UI calls `localizeTerm` to
 render localized labels. Unknown IDs echo back so new vocabulary never renders
-empty, and locales without a reviewed glossary fall back to English.
+empty, and unknown locale codes still fall back to English.
 
 ## Fonts
 
@@ -65,7 +69,8 @@ stack. The root layout registers the bundled `next/font` script variables
 
 ## Next Steps
 
-1. Add human-reviewed dictionaries and glossaries for each registered language.
+1. Run native-language QA and glossary review per locale before marking
+   translations complete.
 2. Bundle the remaining Indic script fonts (Gujarati, Gurmukhi, Kannada,
    Malayalam, Oriya, Tamil, Telugu, Arabic) as translations land.
 3. Persist the selected locale so navigation and refreshes keep the choice.

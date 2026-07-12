@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
+import type { AppStringsDictionary } from "@/lib/i18n/app-strings";
 import { localizeTerm } from "@/lib/i18n/glossary";
-import type { KundliMessages } from "@/lib/i18n/kundli-messages";
 import type { LocaleCode } from "@/lib/i18n/locales";
 import type {
   BirthChartResult,
@@ -11,7 +11,7 @@ import type {
 type KundliChartProps = {
   chart: BirthChartResult;
   localeCode: LocaleCode;
-  messages: KundliMessages;
+  messages: AppStringsDictionary;
 };
 
 const houseCellStyles: Record<number, CSSProperties> = {

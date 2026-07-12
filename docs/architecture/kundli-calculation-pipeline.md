@@ -46,7 +46,7 @@ The engine reads one JSON object from stdin:
 }
 ```
 
-`timezoneOffsetMinutes` is minutes east of UTC. The service computes it from `birthDate`, `birthTime`, and `timeZone` unless a validated manual offset is supplied.
+`timezoneOffsetMinutes` is minutes east of UTC. The service computes it from `birthDate`, `birthTime`, and `timeZone`. The current UI does not expose manual UTC offset input.
 
 ## Engine Output Contract
 
