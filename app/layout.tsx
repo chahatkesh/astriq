@@ -30,8 +30,8 @@ const notoSansBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: "Birth Chart Generator",
-  description: "Production app for generating and managing birth charts.",
+  title: "Astriq",
+  description: "Astriq helps users generate and manage birth charts.",
 };
 
 const fontVariables = [

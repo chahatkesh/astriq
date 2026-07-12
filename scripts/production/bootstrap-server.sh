@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# One-time production server bootstrap for the Birth Chart Generator app.
+# One-time production server bootstrap for the Astriq app.
 # Installs Docker, nginx, and an nginx reverse proxy for the production app.
 
 set -euo pipefail
 
-APP_DOMAIN="${APP_DOMAIN:-birth-chart.example.com}"
+APP_DOMAIN="${APP_DOMAIN:-astriq.example.com}"
 APP_PORT="${APP_PORT:-3000}"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NGINX_TEMPLATE="${SCRIPT_DIR}/../../infrastructure/nginx/birth-chart-generator.conf"
+NGINX_TEMPLATE="${SCRIPT_DIR}/../../infrastructure/nginx/astriq.conf"
 
 if [ "$(id -u)" -eq 0 ]; then
   echo "Run as a non-root sudo user. This script uses sudo where needed." >&2
   exit 1
 fi
 
-echo "=== Birth Chart Generator production bootstrap ==="
+echo "=== Astriq production bootstrap ==="
 echo "Domain: ${APP_DOMAIN}"
 echo "App port: ${APP_PORT}"
 
@@ -32,8 +32,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
   nginx certbot python3-certbot-nginx curl
 
 echo "=== Creating app directory ==="
-mkdir -p "$HOME/birth-chart-generator"
-chmod 750 "$HOME/birth-chart-generator"
+mkdir -p "$HOME/astriq"
+chmod 750 "$HOME/astriq"
 
 echo "=== Installing nginx site config ==="
 if [ ! -f "$NGINX_TEMPLATE" ]; then
@@ -42,7 +42,7 @@ if [ ! -f "$NGINX_TEMPLATE" ]; then
 fi
 
 sudo cp "$NGINX_TEMPLATE" "/etc/nginx/sites-available/${APP_DOMAIN}"
-sudo sed -i "s/birth-chart.example.com/${APP_DOMAIN}/g" "/etc/nginx/sites-available/${APP_DOMAIN}"
+sudo sed -i "s/astriq.example.com/${APP_DOMAIN}/g" "/etc/nginx/sites-available/${APP_DOMAIN}"
 sudo sed -i "s/127.0.0.1:3000/127.0.0.1:${APP_PORT}/g" "/etc/nginx/sites-available/${APP_DOMAIN}"
 sudo ln -sf "/etc/nginx/sites-available/${APP_DOMAIN}" "/etc/nginx/sites-enabled/${APP_DOMAIN}"
 sudo rm -f /etc/nginx/sites-enabled/default

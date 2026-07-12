@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Database boundary package for Birth Chart Generator.",
+  "description": "Database boundary package for Astriq.",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "type-check": "pnpm db:generate && tsc --noEmit -p tsconfig.json",

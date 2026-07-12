@@ -35,9 +35,12 @@ COPY next.config.ts package.json pnpm-lock.yaml pnpm-workspace.yaml postcss.conf
 
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
+ARG DATABASE_URL
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV APP_ENV=production
-ENV NEXT_PUBLIC_APP_NAME="Birth Chart Generator"
+ENV DATABASE_URL=$DATABASE_URL
+ENV NEXT_PUBLIC_APP_NAME="Astriq"
 
 RUN pnpm db:generate
 RUN pnpm build

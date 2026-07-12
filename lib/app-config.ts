@@ -1,5 +1,5 @@
 export const appConfig = {
-  name: "Birth Chart Generator",
+  name: "Astriq",
   healthPath: "/api/health",
   productionPort: 3000,
 } as const;

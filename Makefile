@@ -22,8 +22,8 @@ help:
 
 decrypt-local:
 	@echo "Decrypting local secrets..."
-	@tmp_yaml=$$(mktemp "$${TMPDIR:-/tmp}/birth-chart-local-secrets.XXXXXX"); \
-	tmp_env=$$(mktemp "$${TMPDIR:-/tmp}/birth-chart-local-env.XXXXXX"); \
+	@tmp_yaml=$$(mktemp "$${TMPDIR:-/tmp}/astriq-local-secrets.XXXXXX"); \
+	tmp_env=$$(mktemp "$${TMPDIR:-/tmp}/astriq-local-env.XXXXXX"); \
 	trap 'rm -f "$$tmp_yaml" "$$tmp_env"' EXIT INT TERM; \
 	sops -d secrets/local.enc.yaml > "$$tmp_yaml"; \
 	$(SOPS_ENV_AWK) "$$tmp_yaml" > "$$tmp_env"; \
@@ -32,8 +32,8 @@ decrypt-local:
 
 decrypt-production:
 	@echo "Decrypting production secrets..."
-	@tmp_yaml=$$(mktemp "$${TMPDIR:-/tmp}/birth-chart-production-secrets.XXXXXX"); \
-	tmp_env=$$(mktemp "$${TMPDIR:-/tmp}/birth-chart-production-env.XXXXXX"); \
+	@tmp_yaml=$$(mktemp "$${TMPDIR:-/tmp}/astriq-production-secrets.XXXXXX"); \
+	tmp_env=$$(mktemp "$${TMPDIR:-/tmp}/astriq-production-env.XXXXXX"); \
 	trap 'rm -f "$$tmp_yaml" "$$tmp_env"' EXIT INT TERM; \
 	sops -d secrets/production.enc.yaml > "$$tmp_yaml"; \
 	$(SOPS_ENV_AWK) "$$tmp_yaml" > "$$tmp_env"; \
