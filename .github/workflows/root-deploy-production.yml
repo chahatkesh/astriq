@@ -293,16 +293,39 @@ jobs:
         run: |
           printf '%s\n' "$GHCR_READ_TOKEN" | ssh astriq-production "docker login ghcr.io -u '$GHCR_READ_USERNAME' --password-stdin"
 
+      - name: Retire legacy birth-chart-generator stack
+        run: |
+          ssh astriq-production 'bash -seuo pipefail' <<'EOF'
+            legacy_dir="$HOME/birth-chart-generator"
+            if [ -f "$legacy_dir/infrastructure/docker/docker-compose.prod.yml" ]; then
+              docker compose \
+                --env-file "$legacy_dir/.env.production" \
+                -f "$legacy_dir/infrastructure/docker/docker-compose.prod.yml" \
+                down || true
+            fi
+
+            if docker ps -a --format '{{.Names}}' | grep -qx 'birth-chart-generator-app-prod'; then
+              docker rm -f birth-chart-generator-app-prod || true
+            fi
+
+            docker network rm birth-chart-generator-prod_default 2>/dev/null || true
+          EOF
+
       - name: Clean up old Docker resources
         run: |
           ssh astriq-production 'bash -seuo pipefail' <<'EOF'
             df -h /
             docker image prune -f || true
             docker container prune -f || true
-            docker images "ghcr.io/*/birth-chart-generator-app" --format '{{.ID}} {{.CreatedAt}}' \
-              | tail -n +4 \
-              | awk '{ print $1 }' \
-              | xargs -r docker rmi -f || true
+            for image_pattern in \
+              'ghcr.io/*/astriq-app' \
+              'ghcr.io/*/birth-chart-generator-app'
+            do
+              docker images "$image_pattern" --format '{{.ID}} {{.CreatedAt}}' \
+                | tail -n +4 \
+                | awk '{ print $1 }' \
+                | xargs -r docker rmi -f || true
+            done
             df -h /
           EOF
 
