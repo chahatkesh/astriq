@@ -43,9 +43,7 @@ export function KundliLanding({ locale }: KundliLandingProps) {
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
               Vedic birth chart
             </p>
-            <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">
-              Birth Chart Generator
-            </h1>
+            <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">Astriq</h1>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <Link

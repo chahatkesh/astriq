@@ -20,7 +20,7 @@ env:
   CI: "true"
   APP_ENV: test
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/birth_chart_generator_ci
-  NEXT_PUBLIC_APP_NAME: Birth Chart Generator
+  NEXT_PUBLIC_APP_NAME: Astriq
 
 jobs:
   quality:

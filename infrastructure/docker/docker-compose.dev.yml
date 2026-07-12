@@ -1,9 +1,9 @@
-name: birth-chart-generator-dev
+name: astriq-dev
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: birth-chart-generator-postgres-dev
+    container_name: astriq-postgres-dev
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

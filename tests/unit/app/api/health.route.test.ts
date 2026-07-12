@@ -9,7 +9,7 @@ describe("GET /api/health", () => {
     expect(response.status).toBe(200);
     expect(body).toMatchObject({
       status: "ok",
-      service: "Birth Chart Generator",
+      service: "Astriq",
       environment: "test",
     });
     expect(new Date(body.timestamp).toString()).not.toBe("Invalid Date");

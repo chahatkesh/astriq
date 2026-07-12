@@ -1,6 +1,6 @@
 # Engineering Docs
 
-Internal guidance for the Birth Chart Generator codebase.
+Internal guidance for the Astriq codebase.
 
 - [Architecture: Codebase Structure](architecture/codebase-structure.md)
 - [Deployment: GitHub Governance](deployment/github-governance.md)

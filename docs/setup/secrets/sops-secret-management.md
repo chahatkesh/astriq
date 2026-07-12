@@ -31,9 +31,11 @@ export SOPS_AGE_KEY_FILE="$PWD/.age-key.txt"
 Optional shell profile entry:
 
 ```bash
-echo 'export SOPS_AGE_KEY_FILE="/Users/chahatkesharwani/Desktop/CODE/birth-chart-generator/.age-key.txt"' >> ~/.zshrc
+echo 'export SOPS_AGE_KEY_FILE="$PWD/.age-key.txt"' >> ~/.zshrc
 source ~/.zshrc
 ```
+
+Run that from the Astriq repository root (or point `SOPS_AGE_KEY_FILE` at your local `.age-key.txt`).
 
 ## Daily Commands
 

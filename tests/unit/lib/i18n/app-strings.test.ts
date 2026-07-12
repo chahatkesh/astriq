@@ -6,14 +6,14 @@ describe("AppStrings", () => {
   it("returns English strings for the default locale", () => {
     const strings = AppStrings.forLocale("en");
 
-    expect(strings.app.title).toBe("Birth Chart Generator");
+    expect(strings.app.title).toBe("Astriq");
     expect(strings.form.submit).toBe("Generate Kundli");
   });
 
   it("applies Hindi locale overrides", () => {
     const strings = AppStrings.forLocale("hi");
 
-    expect(strings.app.title).toBe("जन्म कुंडली जनरेटर");
+    expect(strings.app.title).toBe("Astriq");
     expect(strings.table.retrograde).toBe("वक्री");
   });
 

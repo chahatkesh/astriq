@@ -3,7 +3,7 @@ import type { LocaleCode } from "@/lib/i18n/locales";
 const englishAppStrings = {
   app: {
     eyebrow: "Vedic birth chart",
-    title: "Birth Chart Generator",
+    title: "Astriq",
     subtitle: "Lahiri / sidereal / whole sign",
     language: "Language",
   },
@@ -89,7 +89,7 @@ type AppStringsOverrides = {
 const hindiAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "वैदिक जन्म कुंडली",
-    title: "जन्म कुंडली जनरेटर",
+    title: "Astriq",
     subtitle: "लाहिड़ी / निरयन / पूर्ण राशि",
     language: "भाषा",
   },
@@ -167,7 +167,7 @@ const hindiAppStrings: AppStringsOverrides = {
 const bengaliAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "বৈদিক জন্মকুণ্ডলী",
-    title: "জন্মকুণ্ডলী জেনারেটর",
+    title: "Astriq",
     subtitle: "লাহিড়ী / নিরয়ণ / পূর্ণ রাশি",
     language: "ভাষা",
   },
@@ -245,7 +245,7 @@ const bengaliAppStrings: AppStringsOverrides = {
 const gujaratiAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "વૈદિક જન્મ કુંડળી",
-    title: "જન્મ કુંડળી જનરેટર",
+    title: "Astriq",
     subtitle: "લાહિરી / નિરાયણ / પૂર્ણ રાશિ",
     language: "ભાષા",
   },
@@ -323,7 +323,7 @@ const gujaratiAppStrings: AppStringsOverrides = {
 const kannadaAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "ವೇದಿಕ ಜನ್ಮ ಕುಂಡಲಿ",
-    title: "ಜನ್ಮ ಕುಂಡಲಿ ಜನರೇಟರ್",
+    title: "Astriq",
     subtitle: "ಲಹಿರಿ / ನಿರಾಯಣ / ಸಂಪೂರ್ಣ ರಾಶಿ",
     language: "ಭಾಷೆ",
   },
@@ -401,7 +401,7 @@ const kannadaAppStrings: AppStringsOverrides = {
 const malayalamAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "വേദിക ജന്മകുണ്ടലി",
-    title: "ജന്മകുണ്ടലി ജനറേറ്റർ",
+    title: "Astriq",
     subtitle: "ലഹിരി / നിരായണ / പൂർണ്ണ രാശി",
     language: "ഭാഷ",
   },
@@ -479,7 +479,7 @@ const malayalamAppStrings: AppStringsOverrides = {
 const odiaAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "ବୈଦିକ ଜନ୍ମ କୁଣ୍ଡଳୀ",
-    title: "ଜନ୍ମ କୁଣ୍ଡଳୀ ଜେନେରେଟର",
+    title: "Astriq",
     subtitle: "ଲାହିରୀ / ନିରାୟଣ / ପୂର୍ଣ୍ଣ ରାଶି",
     language: "ଭାଷା",
   },
@@ -557,7 +557,7 @@ const odiaAppStrings: AppStringsOverrides = {
 const punjabiAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "ਵੈਦਿਕ ਜਨਮ ਕੁੰਡਲੀ",
-    title: "ਜਨਮ ਕੁੰਡਲੀ ਜਨਰੇਟਰ",
+    title: "Astriq",
     subtitle: "ਲਾਹਿਰੀ / ਨਿਰਾਯਣ / ਪੂਰੀ ਰਾਸ਼ੀ",
     language: "ਭਾਸ਼ਾ",
   },
@@ -635,7 +635,7 @@ const punjabiAppStrings: AppStringsOverrides = {
 const tamilAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "வேத ஜன்மக் குண்டலி",
-    title: "பிறப்பு ஜாதக உருவாக்கி",
+    title: "Astriq",
     subtitle: "லாஹிரி / நிராயண / முழு ராசி",
     language: "மொழி",
   },
@@ -715,7 +715,7 @@ const tamilAppStrings: AppStringsOverrides = {
 const teluguAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "వేద జన్మ కుండలి",
-    title: "జన్మ కుండలి జనరేటర్",
+    title: "Astriq",
     subtitle: "లాహిరి / నిరాయణ / పూర్తి రాశి",
     language: "భాష",
   },
@@ -794,7 +794,7 @@ const teluguAppStrings: AppStringsOverrides = {
 const marathiAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "वैदिक जन्म कुंडली",
-    title: "जन्म कुंडली जनरेटर",
+    title: "Astriq",
     subtitle: "लाहिरी / निरयन / पूर्ण राशी",
     language: "भाषा",
   },
@@ -872,7 +872,7 @@ const marathiAppStrings: AppStringsOverrides = {
 const urduAppStrings: AppStringsOverrides = {
   app: {
     eyebrow: "ویدک پیدائشی کنڈلی",
-    title: "پیدائشی کنڈلی جنریٹر",
+    title: "Astriq",
     subtitle: "لہیری / نراین / مکمل راشی",
     language: "زبان",
   },

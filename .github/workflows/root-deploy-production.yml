@@ -48,7 +48,7 @@ env:
   APP_ENV: production
   NODE_ENV: production
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/birth_chart_generator_build
-  NEXT_PUBLIC_APP_NAME: Birth Chart Generator
+  NEXT_PUBLIC_APP_NAME: Astriq
 
 jobs:
   quality:
@@ -122,14 +122,16 @@ jobs:
         with:
           context: .
           file: infrastructure/dockerfiles/Dockerfile.prod
+          build-args: |
+            DATABASE_URL=${{ env.DATABASE_URL }}
           platforms: linux/amd64
           push: true
           provenance: false
           tags: |
             ${{ env.APP_IMAGE }}:${{ github.sha }}
             ${{ env.APP_IMAGE }}:production
-          cache-from: type=gha,scope=birth-chart-generator-app-production
-          cache-to: type=gha,scope=birth-chart-generator-app-production,mode=max
+          cache-from: type=gha,scope=astriq-app-production
+          cache-to: type=gha,scope=astriq-app-production,mode=max
 
       - name: Verify pushed app image
         env:
@@ -225,7 +227,7 @@ jobs:
         id: configure-ssh
         uses: ./.github/actions/configure-ssh
         with:
-          host-alias: birth-chart-production
+          host-alias: astriq-production
           host: ${{ secrets.PRODUCTION_HOST }}
           user: ${{ secrets.PRODUCTION_DEPLOY_USER }}
           private-key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
@@ -272,15 +274,15 @@ jobs:
       - name: Transfer deployment files
         run: |
           set -euo pipefail
-          ssh birth-chart-production "mkdir -p ~/birth-chart-generator/infrastructure/docker && chmod 750 ~/birth-chart-generator"
-          scp infrastructure/docker/docker-compose.prod.yml birth-chart-production:birth-chart-generator/infrastructure/docker/docker-compose.prod.yml
-          scp .env.production birth-chart-production:birth-chart-generator/.env.production
+          ssh astriq-production "mkdir -p ~/astriq/infrastructure/docker && chmod 750 ~/astriq"
+          scp infrastructure/docker/docker-compose.prod.yml astriq-production:astriq/infrastructure/docker/docker-compose.prod.yml
+          scp .env.production astriq-production:astriq/.env.production
           rm .env.production
 
       - name: Validate remote compose config
         run: |
-          ssh birth-chart-production 'bash -seuo pipefail' <<'EOF'
-            cd ~/birth-chart-generator
+          ssh astriq-production 'bash -seuo pipefail' <<'EOF'
+            cd ~/astriq
             docker compose --env-file .env.production -f infrastructure/docker/docker-compose.prod.yml config >/dev/null
           EOF
 
@@ -289,11 +291,11 @@ jobs:
           GHCR_READ_USERNAME: ${{ secrets.GHCR_READ_USERNAME }}
           GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
         run: |
-          printf '%s\n' "$GHCR_READ_TOKEN" | ssh birth-chart-production "docker login ghcr.io -u '$GHCR_READ_USERNAME' --password-stdin"
+          printf '%s\n' "$GHCR_READ_TOKEN" | ssh astriq-production "docker login ghcr.io -u '$GHCR_READ_USERNAME' --password-stdin"
 
       - name: Clean up old Docker resources
         run: |
-          ssh birth-chart-production 'bash -seuo pipefail' <<'EOF'
+          ssh astriq-production 'bash -seuo pipefail' <<'EOF'
             df -h /
             docker image prune -f || true
             docker container prune -f || true
@@ -306,8 +308,8 @@ jobs:
 
       - name: Pull image and restart app
         run: |
-          ssh birth-chart-production 'bash -seuo pipefail' <<'EOF'
-            cd ~/birth-chart-generator
+          ssh astriq-production 'bash -seuo pipefail' <<'EOF'
+            cd ~/astriq
 
             compose() {
               docker compose --env-file .env.production -f infrastructure/docker/docker-compose.prod.yml "$@"
@@ -319,8 +321,8 @@ jobs:
 
       - name: Verify production health
         run: |
-          ssh birth-chart-production 'bash -seuo pipefail' <<'EOF'
-            cd ~/birth-chart-generator
+          ssh astriq-production 'bash -seuo pipefail' <<'EOF'
+            cd ~/astriq
             app_port="$(awk -F= '$1 == "APP_PORT" { print $2 }' .env.production)"
             app_port="${app_port:-3000}"
 
@@ -340,8 +342,8 @@ jobs:
       - name: Deployment diagnostics
         if: always() && steps.configure-ssh.outcome == 'success'
         run: |
-          ssh birth-chart-production <<'EOF'
-            cd ~/birth-chart-generator || exit 0
+          ssh astriq-production <<'EOF'
+            cd ~/astriq || exit 0
             echo "### Container status"
             docker compose --env-file .env.production -f infrastructure/docker/docker-compose.prod.yml ps -a || true
             echo "### Local app health"

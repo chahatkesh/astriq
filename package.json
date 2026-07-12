@@ -1,7 +1,7 @@
 {
-  "name": "birth-chart-generator",
+  "name": "astriq",
   "version": "0.1.0",
-  "description": "Production Next.js app for birth chart generation.",
+  "description": "Astriq is a production Next.js app for birth chart generation.",
   "private": true,
   "engines": {
     "node": ">=20.9.0"

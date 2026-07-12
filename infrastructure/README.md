@@ -1,6 +1,6 @@
 # Infrastructure
 
-Local and production runtime contracts for the single Birth Chart Generator app.
+Local and production runtime contracts for the single Astriq app.
 
 ## Local Docker
 
@@ -15,6 +15,6 @@ Local and production runtime contracts for the single Birth Chart Generator app.
 - Build image: [dockerfiles/Dockerfile.prod](dockerfiles/Dockerfile.prod)
 - Run stack: [docker/docker-compose.prod.yml](docker/docker-compose.prod.yml)
 - Health check: `/api/health`
-- Reverse proxy template: [nginx/birth-chart-generator.conf](nginx/birth-chart-generator.conf)
+- Reverse proxy template: [nginx/astriq.conf](nginx/astriq.conf)
 
 No staging environment is modeled in this repo.
