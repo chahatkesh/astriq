@@ -8,6 +8,8 @@ type EnvironmentRecord = Record<string, string | undefined>;
 
 const DEFAULT_DATABASE_URL =
   "postgresql://postgres:postgres@localhost:5432/birth_chart_generator_dev";
+const SSLMODE_TLS_VALUES = new Set(["require", "verify-ca", "verify-full"]);
+const SSLMODE_NON_TLS_VALUES = new Set(["disable", "allow", "prefer"]);
 
 function normalizeRuntime(value: string | undefined): DatabaseRuntime {
   if (value === "production" || value === "test" || value === "development") {
@@ -32,7 +34,7 @@ export function getDatabaseConfig(
   return {
     runtime,
     url,
-    ssl: runtime === "production",
+    ssl: shouldUseSsl(url, env),
     isConfigured: url.length > 0,
   };
 }
@@ -67,6 +69,66 @@ function createPrismaClient(env: EnvironmentRecord = process.env) {
     log:
       config.runtime === "development" ? ["query", "error", "warn"] : ["error"],
   });
+}
+
+function shouldUseSsl(
+  databaseUrl: string,
+  env: EnvironmentRecord = process.env,
+): boolean {
+  const fromConnectionString =
+    getSslPreferenceFromConnectionString(databaseUrl);
+  if (fromConnectionString !== undefined) {
+    return fromConnectionString;
+  }
+
+  const sslMode = env.PGSSLMODE?.trim().toLowerCase();
+  if (!sslMode) {
+    return false;
+  }
+
+  if (SSLMODE_TLS_VALUES.has(sslMode)) {
+    return true;
+  }
+
+  if (SSLMODE_NON_TLS_VALUES.has(sslMode)) {
+    return false;
+  }
+
+  return false;
+}
+
+function getSslPreferenceFromConnectionString(
+  databaseUrl: string,
+): boolean | undefined {
+  if (!databaseUrl) {
+    return undefined;
+  }
+
+  let parsed: URL;
+
+  try {
+    parsed = new URL(databaseUrl);
+  } catch {
+    return undefined;
+  }
+
+  const sslMode = parsed.searchParams.get("sslmode")?.trim().toLowerCase();
+  if (sslMode) {
+    if (SSLMODE_TLS_VALUES.has(sslMode)) {
+      return true;
+    }
+
+    if (SSLMODE_NON_TLS_VALUES.has(sslMode)) {
+      return false;
+    }
+  }
+
+  const ssl = parsed.searchParams.get("ssl")?.trim().toLowerCase();
+  if (ssl) {
+    return ssl === "true" || ssl === "1";
+  }
+
+  return undefined;
 }
 
 const globalForPrisma = globalThis as unknown as {

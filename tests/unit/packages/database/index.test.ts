@@ -14,11 +14,38 @@ describe("getDatabaseConfig", () => {
     });
   });
 
-  it("uses production SSL for the production runtime", () => {
+  it("does not force SSL when production DATABASE_URL has no SSL mode", () => {
     expect(
       getDatabaseConfig({
         APP_ENV: "production",
         DATABASE_URL: "postgresql://example.invalid/app",
+      }),
+    ).toMatchObject({
+      runtime: "production",
+      ssl: false,
+      isConfigured: true,
+    });
+  });
+
+  it("enables SSL when DATABASE_URL explicitly requires it", () => {
+    expect(
+      getDatabaseConfig({
+        APP_ENV: "production",
+        DATABASE_URL: "postgresql://example.invalid/app?sslmode=require",
+      }),
+    ).toMatchObject({
+      runtime: "production",
+      ssl: true,
+      isConfigured: true,
+    });
+  });
+
+  it("respects PGSSLMODE when DATABASE_URL has no SSL query", () => {
+    expect(
+      getDatabaseConfig({
+        APP_ENV: "production",
+        DATABASE_URL: "postgresql://example.invalid/app",
+        PGSSLMODE: "verify-full",
       }),
     ).toMatchObject({
       runtime: "production",

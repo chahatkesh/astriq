@@ -11,6 +11,7 @@ This repo tracks one deployed runtime: production.
 - GitHub deployment template: [../../.github/workflows/root-deploy-production.yml](../../.github/workflows/root-deploy-production.yml)
 - Health endpoint: `/api/health`
 - Environment contract: [../../.env.example](../../.env.example)
+- DB SSL mode is controlled by `DATABASE_URL` query params (for example `sslmode=require`) or `PGSSLMODE`; the in-stack `postgres` service is non-TLS by default.
 
 Production `DATABASE_URL` must reach the compose service hostname `postgres` (not `localhost`). Postgres is not published on the host network.
 
