@@ -324,24 +324,6 @@ jobs:
         run: |
           printf '%s\n' "$GHCR_READ_TOKEN" | ssh astriq-production "docker login ghcr.io -u '$GHCR_READ_USERNAME' --password-stdin"
 
-      - name: Retire legacy birth-chart-generator stack
-        run: |
-          ssh astriq-production 'bash -seuo pipefail' <<'EOF'
-            legacy_dir="$HOME/birth-chart-generator"
-            if [ -f "$legacy_dir/infrastructure/docker/docker-compose.prod.yml" ]; then
-              docker compose \
-                --env-file "$legacy_dir/.env.production" \
-                -f "$legacy_dir/infrastructure/docker/docker-compose.prod.yml" \
-                down || true
-            fi
-
-            if docker ps -a --format '{{.Names}}' | grep -qx 'birth-chart-generator-app-prod'; then
-              docker rm -f birth-chart-generator-app-prod || true
-            fi
-
-            docker network rm birth-chart-generator-prod_default 2>/dev/null || true
-          EOF
-
       - name: Clean up old Docker resources
         run: |
           ssh astriq-production 'bash -seuo pipefail' <<'EOF'
@@ -350,8 +332,7 @@ jobs:
             docker container prune -f || true
             for image_pattern in \
               'ghcr.io/*/astriq-app' \
-              'ghcr.io/*/astriq-migrate' \
-              'ghcr.io/*/birth-chart-generator-app'
+              'ghcr.io/*/astriq-migrate'
             do
               docker images "$image_pattern" --format '{{.ID}} {{.CreatedAt}}' \
                 | tail -n +4 \
@@ -384,13 +365,13 @@ jobs:
               if compose exec -T postgres pg_isready \
                 -U "$(awk -F= '$1 == "POSTGRES_USER" { print $2 }' .env.production)" \
                 -d "$(awk -F= '$1 == "POSTGRES_DB" { print $2 }' .env.production)" \
-                >/dev/null 2>&1; then
+                </dev/null >/dev/null 2>&1; then
                 echo "Postgres ready on attempt ${attempt}"
                 break
               fi
               if [ "$attempt" -eq 30 ]; then
                 echo "Postgres did not become ready" >&2
-                compose logs --tail=80 postgres || true
+                compose logs --tail=80 postgres </dev/null || true
                 exit 1
               fi
               sleep 2
@@ -398,14 +379,18 @@ jobs:
 
             network_name="astriq-prod_default"
             database_url="$(awk -F= '$1 == "DATABASE_URL" { print substr($0, index($0, "=") + 1) }' .env.production)"
+            echo "Running Prisma migrations..."
             docker run --rm \
               --network "$network_name" \
               -e DATABASE_URL="$database_url" \
               -e APP_ENV=production \
               -e NODE_ENV=production \
               "$migrate_image"
+            echo "Prisma migrations finished"
 
-            compose up -d app
+            echo "Recreating app container..."
+            compose up -d --force-recreate app </dev/null
+            echo "App recreate requested"
           EOF
 
       - name: Verify production health
@@ -451,5 +436,6 @@ jobs:
             echo "### Production deployment complete"
             echo ""
             echo "- App image: \`${APP_IMAGE}:${GITHUB_SHA}\`"
+            echo "- Migrate image: \`${MIGRATE_IMAGE}:${GITHUB_SHA}\`"
             echo "- URL: \`${PRODUCTION_APP_URL}\`"
           } >> "$GITHUB_STEP_SUMMARY"
