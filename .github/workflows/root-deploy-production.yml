@@ -57,6 +57,8 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+    env:
+      APP_ENV: test
 
     steps:
       - name: Checkout repository
