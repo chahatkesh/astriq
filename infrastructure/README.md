@@ -12,9 +12,10 @@ Local and production runtime contracts for the single Astriq app.
 
 ## Production
 
-- Build image: [dockerfiles/Dockerfile.prod](dockerfiles/Dockerfile.prod)
-- Run stack: [docker/docker-compose.prod.yml](docker/docker-compose.prod.yml)
+- Build image: [dockerfiles/Dockerfile.prod](dockerfiles/Dockerfile.prod) (`runner` app target, `migrate` Prisma target)
+- Run stack: [docker/docker-compose.prod.yml](docker/docker-compose.prod.yml) (`app` + internal `postgres`)
 - Health check: `/api/health`
 - Reverse proxy template: [nginx/astriq.conf](nginx/astriq.conf)
+- Postgres is compose-internal only (no host port publish). `DATABASE_URL` must use hostname `postgres`.
 
 No staging environment is modeled in this repo.

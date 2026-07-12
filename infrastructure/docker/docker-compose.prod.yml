@@ -1,6 +1,27 @@
 name: astriq-prod
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: astriq-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-birth_chart_generator}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-birth_chart_generator}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   app:
     build:
       context: ../..
@@ -8,12 +29,16 @@ services:
     image: ${APP_IMAGE:-astriq:prod}
     container_name: astriq-app-prod
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     env_file:
       - ../../.env.production
     environment:
       APP_ENV: production
       NODE_ENV: production
       NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Astriq}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
     ports:
       - "${APP_PORT:-3000}:3000"
     healthcheck:
@@ -26,3 +51,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+
+volumes:
+  postgres_data:
+    driver: local

@@ -40,6 +40,7 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   APP_IMAGE: ghcr.io/${{ github.repository }}-app
+  MIGRATE_IMAGE: ghcr.io/${{ github.repository }}-migrate
   NODE_VERSION: "24"
   PNPM_VERSION: "10.34.4"
   PRODUCTION_APP_URL: https://${{ secrets.PRODUCTION_APP_DOMAIN }}
@@ -122,6 +123,7 @@ jobs:
         with:
           context: .
           file: infrastructure/dockerfiles/Dockerfile.prod
+          target: runner
           build-args: |
             DATABASE_URL=${{ env.DATABASE_URL }}
           platforms: linux/amd64
@@ -132,6 +134,21 @@ jobs:
             ${{ env.APP_IMAGE }}:production
           cache-from: type=gha,scope=astriq-app-production
           cache-to: type=gha,scope=astriq-app-production,mode=max
+
+      - name: Build and push migrate image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: infrastructure/dockerfiles/Dockerfile.prod
+          target: migrate
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          tags: |
+            ${{ env.MIGRATE_IMAGE }}:${{ github.sha }}
+            ${{ env.MIGRATE_IMAGE }}:production
+          cache-from: type=gha,scope=astriq-migrate-production
+          cache-to: type=gha,scope=astriq-migrate-production,mode=max
 
       - name: Verify pushed app image
         env:
@@ -144,6 +161,18 @@ jobs:
             test -f /app/server.js
             test -d /app/.next/static
             test -d /app/public
+          '
+
+      - name: Verify pushed migrate image
+        env:
+          IMAGE_REF: ${{ env.MIGRATE_IMAGE }}:${{ github.sha }}
+        run: |
+          set -euo pipefail
+          docker pull "$IMAGE_REF"
+          docker run --rm --entrypoint sh "$IMAGE_REF" -c '
+            set -eu
+            test -f /workspace/packages/database/package.json
+            test -d /workspace/packages/database/prisma/migrations
           '
 
       - name: Report high and critical app vulnerabilities
@@ -173,6 +202,7 @@ jobs:
             echo "### App image"
             echo ""
             echo "- Image: \`${APP_IMAGE}:${GITHUB_SHA}\`"
+            echo "- Migrate image: \`${MIGRATE_IMAGE}:${GITHUB_SHA}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
@@ -260,6 +290,7 @@ jobs:
           rm .age-key.txt
           chmod 600 .env.production
           echo "APP_IMAGE=${APP_IMAGE}:${GITHUB_SHA}" >> .env.production
+          echo "MIGRATE_IMAGE=${MIGRATE_IMAGE}:${GITHUB_SHA}" >> .env.production
 
       - name: Masked env sanity check
         run: |
@@ -319,6 +350,7 @@ jobs:
             docker container prune -f || true
             for image_pattern in \
               'ghcr.io/*/astriq-app' \
+              'ghcr.io/*/astriq-migrate' \
               'ghcr.io/*/birth-chart-generator-app'
             do
               docker images "$image_pattern" --format '{{.ID}} {{.CreatedAt}}' \
@@ -329,7 +361,7 @@ jobs:
             df -h /
           EOF
 
-      - name: Pull image and restart app
+      - name: Pull images, migrate, and restart stack
         run: |
           ssh astriq-production 'bash -seuo pipefail' <<'EOF'
             cd ~/astriq
@@ -338,7 +370,41 @@ jobs:
               docker compose --env-file .env.production -f infrastructure/docker/docker-compose.prod.yml "$@"
             }
 
-            compose pull app
+            migrate_image="$(awk -F= '$1 == "MIGRATE_IMAGE" { print $2 }' .env.production)"
+            if [ -z "$migrate_image" ]; then
+              echo "MIGRATE_IMAGE is missing from .env.production" >&2
+              exit 1
+            fi
+
+            compose pull app postgres
+            docker pull "$migrate_image"
+            compose up -d postgres
+
+            for attempt in $(seq 1 30); do
+              if compose exec -T postgres pg_isready \
+                -U "$(awk -F= '$1 == "POSTGRES_USER" { print $2 }' .env.production)" \
+                -d "$(awk -F= '$1 == "POSTGRES_DB" { print $2 }' .env.production)" \
+                >/dev/null 2>&1; then
+                echo "Postgres ready on attempt ${attempt}"
+                break
+              fi
+              if [ "$attempt" -eq 30 ]; then
+                echo "Postgres did not become ready" >&2
+                compose logs --tail=80 postgres || true
+                exit 1
+              fi
+              sleep 2
+            done
+
+            network_name="astriq-prod_default"
+            database_url="$(awk -F= '$1 == "DATABASE_URL" { print substr($0, index($0, "=") + 1) }' .env.production)"
+            docker run --rm \
+              --network "$network_name" \
+              -e DATABASE_URL="$database_url" \
+              -e APP_ENV=production \
+              -e NODE_ENV=production \
+              "$migrate_image"
+
             compose up -d app
           EOF
 

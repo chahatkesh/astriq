@@ -45,6 +45,21 @@ ENV NEXT_PUBLIC_APP_NAME="Astriq"
 RUN pnpm db:generate
 RUN pnpm build
 
+FROM base AS migrate
+WORKDIR /workspace
+
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+
+COPY --from=deps /workspace/node_modules ./node_modules
+COPY --from=deps /workspace/packages/database/node_modules ./packages/database/node_modules
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/database ./packages/database
+
+ENV APP_ENV=production
+ENV NODE_ENV=production
+
+CMD ["pnpm", "--filter", "database", "db:deploy"]
+
 FROM base AS runner
 WORKDIR /app
 
