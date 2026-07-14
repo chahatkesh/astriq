@@ -1,7 +1,11 @@
-import type { CSSProperties } from "react";
+"use client";
+
+import { Download, LoaderCircle } from "lucide-react";
+import { useRef, useState, type CSSProperties } from "react";
 import type { AppStringsDictionary } from "@/lib/i18n/app-strings";
 import { localizeTerm } from "@/lib/i18n/glossary";
 import type { LocaleCode } from "@/lib/i18n/locales";
+import { downloadChartAsPdf } from "@/lib/kundli/chart-pdf";
 import type {
   BirthChartResult,
   KundliHouse,
@@ -41,55 +45,93 @@ const planetLabels: Record<string, string> = {
   ketu: "Ke",
 };
 
-const fallbackCalculationProfile = {
-  id: "vedic-lahiri-jpl-de441-v1",
-  label: "Vedic Lahiri JPL DE441 profile",
-  precision: "reference",
-  ephemeris: "NASA/JPL DE441",
-  planetPositionSource: "JPL DE441 geocentric apparent states",
-  ayanamshaModel: "Mean Lahiri approximation",
-  houseModel: "Whole sign from sidereal ascendant",
-  nodeModel: "Mean lunar nodes",
-  expectedTolerance: "Reference profile backed by JPL DE441 planetary states.",
-} satisfies BirthChartResult["metadata"]["calculationProfile"];
-
 function localizeSign(sign: string, localeCode: LocaleCode) {
   return localizeTerm(localeCode, sign.toLowerCase());
 }
 
 export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
+  const paperRef = useRef<HTMLElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const planetByKey = new Map(
     chart.planets.map((planet) => [planet.key, planet] as const),
   );
   const sun = planetByKey.get("sun");
   const moon = planetByKey.get("moon");
-  const profile =
-    chart.metadata.calculationProfile ?? fallbackCalculationProfile;
-  const precisionClassName =
-    "border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200";
+
+  async function handleDownload() {
+    if (!paperRef.current || isExporting) {
+      return;
+    }
+
+    setIsExporting(true);
+    setExportError(null);
+
+    try {
+      await downloadChartAsPdf(paperRef.current, chart.subjectName);
+    } catch {
+      setExportError(messages.chart.downloadFailed);
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(20rem,0.9fr)_minmax(0,1.1fr)]">
-      <section className="border border-foreground/15 bg-background">
-        <div className="border-b border-foreground/15 px-4 py-3">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold">
-                {messages.chart.kundli}
-              </h2>
-              <p className="mt-1 text-sm text-foreground/60">
-                {chart.metadata.placeName} / {formatLocalTime(chart)}
-              </p>
-            </div>
-            <span
-              className={`border px-2 py-1 text-xs font-medium ${precisionClassName}`}
-            >
-              {messages.chart.reference}
-            </span>
-          </div>
+    <div className="grid min-w-0 gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">{messages.chart.kundli}</h2>
+          <p className="text-sm text-foreground/60">
+            {chart.subjectName || messages.chart.unnamed}
+          </p>
         </div>
+        <button
+          className="inline-flex h-10 items-center gap-2 border border-foreground/20 bg-foreground px-3 text-sm font-semibold text-background transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-55"
+          disabled={isExporting}
+          onClick={handleDownload}
+          type="button"
+        >
+          {isExporting ? (
+            <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
+          ) : (
+            <Download aria-hidden="true" className="size-4" />
+          )}
+          {isExporting
+            ? messages.chart.downloading
+            : messages.chart.downloadPdf}
+        </button>
+      </div>
 
-        <dl className="grid border-b border-foreground/15 text-sm sm:grid-cols-3">
+      {exportError ? (
+        <p
+          aria-live="polite"
+          className="border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-200"
+        >
+          {exportError}
+        </p>
+      ) : null}
+
+      <section
+        className="kundli-paper mx-auto w-full p-5 sm:p-8"
+        ref={paperRef}
+      >
+        <header className="kundli-paper-header text-center">
+          <p className="kundli-paper-kicker">Astriq</p>
+          <h3 className="mt-2 text-2xl leading-tight font-semibold sm:text-3xl">
+            {chart.subjectName || messages.chart.unnamed}
+          </h3>
+          <p className="kundli-paper-muted mt-1 text-xs uppercase sm:text-sm">
+            {messages.app.eyebrow}
+          </p>
+          <div className="kundli-paper-rule mx-auto mt-4 w-20" />
+          <p className="kundli-paper-muted mt-4 text-xs leading-5 sm:text-sm">
+            {chart.metadata.placeName}
+            <span aria-hidden="true"> · </span>
+            {formatLocalTime(chart)}
+          </p>
+        </header>
+
+        <dl className="kundli-paper-summary mt-6 grid grid-cols-3 text-center text-sm">
           <SummaryItem
             detail={`${formatDegrees(
               chart.ascendant.degreeInSign,
@@ -113,22 +155,22 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
           />
         </dl>
 
-        <div className="p-4">
+        <div className="mx-auto mt-5 w-full max-w-md">
           <div
             aria-label="Vedic birth chart with twelve houses"
-            className="relative grid aspect-square w-full grid-cols-4 grid-rows-4 border border-foreground/25"
+            className="kundli-paper-chart relative grid aspect-square w-full grid-cols-4 grid-rows-4"
           >
-            <div className="col-start-2 col-span-2 row-start-2 row-span-2 flex flex-col items-center justify-center border border-foreground/15 bg-foreground/[0.03] p-3 text-center">
-              <span className="text-xs uppercase text-foreground/50">
+            <div className="kundli-paper-center col-start-2 col-span-2 row-start-2 row-span-2 flex flex-col items-center justify-center p-3 text-center">
+              <span className="kundli-paper-muted text-[0.65rem] uppercase sm:text-xs">
                 {messages.chart.lagna}
               </span>
-              <span className="mt-1 text-lg font-semibold">
+              <span className="mt-1 text-base font-semibold sm:text-xl">
                 {localizeSign(chart.ascendant.sign, localeCode)}
               </span>
-              <span className="font-mono text-sm text-foreground/65">
+              <span className="kundli-paper-muted font-mono text-xs sm:text-sm">
                 {formatDegrees(chart.ascendant.degreeInSign, localeCode)}
               </span>
-              <span className="mt-2 text-xs text-foreground/55">
+              <span className="kundli-paper-muted mt-2 text-[0.65rem] sm:text-xs">
                 {chart.ascendant.nakshatra.name}{" "}
                 {formatNumber(chart.ascendant.nakshatra.pada, localeCode)}
               </span>
@@ -144,139 +186,49 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
             ))}
           </div>
         </div>
-      </section>
 
-      <section className="grid gap-6">
-        <div className="border border-foreground/15 bg-background">
-          <div className="border-b border-foreground/15 px-4 py-3">
-            <h2 className="text-base font-semibold">
-              {messages.chart.calculationProfile}
-            </h2>
-            <p className="mt-1 text-sm text-foreground/60">{profile.label}</p>
-          </div>
-
-          <dl className="grid text-sm sm:grid-cols-2">
-            <MetaItem
-              label={messages.metadata.backend}
-              value={chart.metadata.engineBackend ?? "jpl_spice"}
-            />
-            <MetaItem
-              label={messages.metadata.precision}
-              value={profile.precision}
-            />
-            <MetaItem
-              label={messages.metadata.ephemeris}
-              value={profile.ephemeris}
-            />
-            <MetaItem
-              label={messages.metadata.planetSource}
-              value={profile.planetPositionSource}
-            />
-            <MetaItem
-              label={messages.metadata.ayanamshaModel}
-              value={profile.ayanamshaModel}
-            />
-            <MetaItem
-              label={messages.metadata.houseModel}
-              value={profile.houseModel}
-            />
-            <MetaItem
-              label={messages.metadata.nodeModel}
-              value={profile.nodeModel}
-            />
-            <MetaItem
-              label={messages.metadata.ayanamsha}
-              value={formatDegrees(chart.metadata.ayanamshaDegrees, localeCode)}
-            />
-            <MetaItem
-              label={messages.metadata.julianDay}
-              value={formatDecimal(chart.metadata.julianDay, localeCode, 5)}
-            />
-            <MetaItem
-              label={messages.metadata.timeZone}
-              value={chart.metadata.timeZone}
-            />
-            <MetaItem
-              label={messages.metadata.utcOffset}
-              value={formatOffset(chart.metadata.timezoneOffsetMinutes)}
-            />
-          </dl>
-
-          <div className="border-t border-foreground/15 px-4 py-3 text-sm leading-6 text-foreground/65">
-            <p>{profile.expectedTolerance}</p>
-            {chart.metadata.warnings.map((warning) => (
-              <p key={warning}>{warning}</p>
-            ))}
-          </div>
-        </div>
-
-        <div className="border border-foreground/15 bg-background">
-          <div className="border-b border-foreground/15 px-4 py-3">
-            <h2 className="text-base font-semibold">
+        <section className="mt-5">
+          <div className="flex items-end justify-between gap-3">
+            <h4 className="text-sm font-semibold uppercase sm:text-base">
               {messages.chart.planetaryPositions}
-            </h2>
-            <p className="mt-1 text-sm text-foreground/60">
+            </h4>
+            <p className="kundli-paper-muted text-[0.6rem] sm:text-xs">
               {messages.chart.planetarySubtitle}
             </p>
           </div>
+          <ul className="kundli-paper-planets mt-3 grid grid-cols-3">
+            {chart.planets.map((planet) => (
+              <li className="min-w-0 p-2 sm:p-3" key={planet.key}>
+                <div className="flex items-baseline justify-between gap-1">
+                  <span className="min-w-0 wrap-break-word text-xs font-semibold sm:text-sm">
+                    {localizeTerm(localeCode, planet.key)}
+                    {planet.retrograde ? " (R)" : ""}
+                  </span>
+                  <span className="kundli-paper-muted font-mono text-[0.6rem] sm:text-xs">
+                    H{formatNumber(planet.house, localeCode)}
+                  </span>
+                </div>
+                <p className="kundli-paper-muted mt-1 wrap-break-word text-[0.6rem] sm:text-xs">
+                  {localizeSign(planet.sign, localeCode)} ·{" "}
+                  {formatDegrees(planet.degreeInSign, localeCode)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[46rem] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-foreground/15 text-left text-xs uppercase text-foreground/50">
-                  <th className="px-4 py-3 font-medium">
-                    {messages.table.graha}
-                  </th>
-                  <th className="px-4 py-3 font-medium">
-                    {messages.table.sign}
-                  </th>
-                  <th className="px-4 py-3 font-medium">
-                    {messages.table.degree}
-                  </th>
-                  <th className="px-4 py-3 font-medium">
-                    {messages.table.house}
-                  </th>
-                  <th className="px-4 py-3 font-medium">
-                    {messages.table.nakshatra}
-                  </th>
-                  <th className="px-4 py-3 font-medium">
-                    {messages.table.retrograde}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {chart.planets.map((planet) => (
-                  <tr
-                    className="border-b border-foreground/10"
-                    key={planet.key}
-                  >
-                    <td className="px-4 py-3 font-medium">
-                      {localizeTerm(localeCode, planet.key)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {localizeSign(planet.sign, localeCode)}
-                    </td>
-                    <td className="px-4 py-3 font-mono">
-                      {formatDegrees(planet.degreeInSign, localeCode)}
-                    </td>
-                    <td className="px-4 py-3 font-mono">
-                      {formatNumber(planet.house, localeCode)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {planet.nakshatra.name}{" "}
-                      {formatNumber(planet.nakshatra.pada, localeCode)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {planet.retrograde
-                        ? messages.table.yes
-                        : messages.table.no}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <footer className="kundli-paper-footer mt-5 pt-3 text-center text-[0.6rem] leading-4 sm:text-xs">
+          <p>
+            Lahiri sidereal · Whole sign houses ·{" "}
+            {chart.metadata.calculationProfile?.ephemeris ??
+              chart.metadata.ephemeris}
+          </p>
+          {chart.metadata.warnings.map((warning) => (
+            <p className="mt-1" key={warning}>
+              {warning}
+            </p>
+          ))}
+        </footer>
       </section>
     </div>
   );
@@ -292,10 +244,16 @@ function SummaryItem({
   value: string;
 }) {
   return (
-    <div className="border-b border-foreground/10 px-4 py-3 sm:border-r sm:last:border-r-0">
-      <dt className="text-xs uppercase text-foreground/45">{label}</dt>
-      <dd className="mt-1 text-lg font-semibold">{value}</dd>
-      <dd className="mt-1 text-xs text-foreground/60">{detail}</dd>
+    <div className="kundli-paper-summary-item min-w-0 px-2 py-3 sm:px-4">
+      <dt className="kundli-paper-muted text-[0.6rem] uppercase sm:text-xs">
+        {label}
+      </dt>
+      <dd className="mt-1 wrap-break-word text-sm font-semibold sm:text-lg">
+        {value}
+      </dd>
+      <dd className="kundli-paper-muted mt-1 wrap-break-word text-[0.55rem] leading-4 sm:text-xs">
+        {detail}
+      </dd>
     </div>
   );
 }
@@ -311,26 +269,24 @@ function HouseCell({
 }) {
   return (
     <div
-      className="flex min-h-0 flex-col justify-between border border-foreground/15 p-2"
+      className="kundli-paper-house flex min-h-0 flex-col justify-between p-1 sm:p-2"
       style={houseCellStyles[house.number]}
     >
-      <div>
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="font-mono text-xs text-foreground/45">
-            H{house.number}
-          </span>
-          <span className="truncate text-xs font-medium">
-            {localizeSign(house.sign, localeCode)}
-          </span>
-        </div>
+      <div className="flex items-start justify-between gap-1">
+        <span className="kundli-paper-muted font-mono text-[0.55rem] sm:text-xs">
+          H{house.number}
+        </span>
+        <span className="max-w-[75%] wrap-break-word text-right text-[0.55rem] font-medium leading-tight sm:text-xs">
+          {localizeSign(house.sign, localeCode)}
+        </span>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-1">
+      <div className="mt-1 flex flex-wrap gap-0.5 sm:gap-1">
         {house.planets.map((planetKey) => {
           const planet = planetByKey.get(planetKey);
           return (
             <span
-              className="border border-foreground/15 px-1.5 py-0.5 font-mono text-[0.68rem] text-foreground/75"
+              className="kundli-paper-planet-tag px-1 py-0.5 font-mono text-[0.5rem] sm:px-1.5 sm:text-[0.68rem]"
               key={planetKey}
               title={localizeTerm(localeCode, planetKey)}
             >
@@ -340,15 +296,6 @@ function HouseCell({
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function MetaItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-b border-foreground/10 px-4 py-3 sm:border-r">
-      <dt className="text-xs uppercase text-foreground/45">{label}</dt>
-      <dd className="mt-1 font-mono text-sm">{value}</dd>
     </div>
   );
 }
@@ -376,18 +323,6 @@ function formatPlanetDetail(planet: PlanetPosition, localeCode: LocaleCode) {
   return `${formatDegrees(planet.degreeInSign, localeCode)} / ${
     planet.nakshatra.name
   } ${formatNumber(planet.nakshatra.pada, localeCode)}`;
-}
-
-function formatDecimal(
-  value: number,
-  localeCode: LocaleCode,
-  fractionDigits: number,
-) {
-  return new Intl.NumberFormat(localeCode, {
-    maximumFractionDigits: fractionDigits,
-    minimumFractionDigits: fractionDigits,
-    useGrouping: false,
-  }).format(value);
 }
 
 function formatNumber(value: number, localeCode: LocaleCode) {

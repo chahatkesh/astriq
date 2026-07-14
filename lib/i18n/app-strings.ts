@@ -9,6 +9,8 @@ const englishAppStrings = {
   },
   form: {
     title: "Birth Details",
+    chartName: "Chart name",
+    chartNamePlaceholder: "e.g. Chahat's birth chart",
     birthDate: "Date of birth",
     birthTime: "Exact time",
     placeName: "Birthplace",
@@ -45,6 +47,10 @@ const englishAppStrings = {
   },
   chart: {
     kundli: "Kundli",
+    unnamed: "Unnamed chart",
+    downloadPdf: "Download PDF",
+    downloading: "Preparing PDF",
+    downloadFailed: "The PDF could not be created. Please try again.",
     lagna: "Lagna",
     moon: "Moon",
     sun: "Sun",

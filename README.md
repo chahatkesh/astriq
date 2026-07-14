@@ -6,7 +6,8 @@ Astriq is a production Next.js app for Vedic birth chart (kundli) generation. Gu
 
 - Locale-aware guest landing with draft birth details preserved through sign-in
 - Email/password accounts with signed HTTP-only session cookies
-- Authenticated kundli workspace with saved chart history
+- Authenticated kundli workspace with named saved chart history
+- Paper-style chart results with direct single-page A4 PDF download
 - Configurable per-user generation quota (`MAX_CHARTS_PER_USER`)
 - C++ kundli engine with JPL SPICE ephemeris support (`KUNDLI_ENGINE_BACKEND=jpl_spice`)
 - Multilingual UI strings and astrology glossary coverage

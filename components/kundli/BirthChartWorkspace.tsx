@@ -27,6 +27,7 @@ import type {
 import type { PlaceCandidate } from "@/services/location-service";
 
 type FormState = {
+  subjectName: string;
   birthDate: string;
   birthTime: string;
   placeName: string;
@@ -37,6 +38,7 @@ type FormState = {
 };
 
 const defaultForm: FormState = {
+  subjectName: "",
   birthDate: "",
   birthTime: "",
   placeName: "",
@@ -153,6 +155,7 @@ export function BirthChartWorkspace({
     setFieldErrors({});
 
     const payload = {
+      subjectName: form.subjectName.trim(),
       birthDate: form.birthDate,
       birthTime: form.birthTime,
       placeName: form.placeName,
@@ -341,6 +344,27 @@ export function BirthChartWorkspace({
             </div>
 
             <form className="grid gap-4 p-4" onSubmit={handleSubmit}>
+              <Field
+                error={fieldErrors.subjectName}
+                id="subjectName"
+                label={messages.form.chartName}
+              >
+                <input
+                  autoComplete="name"
+                  className={inputClassName}
+                  id="subjectName"
+                  maxLength={120}
+                  name="subjectName"
+                  onChange={(event) =>
+                    setForm({ ...form, subjectName: event.target.value })
+                  }
+                  placeholder={messages.form.chartNamePlaceholder}
+                  required
+                  type="text"
+                  value={form.subjectName}
+                />
+              </Field>
+
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 <Field
                   error={fieldErrors.birthDate}
@@ -550,6 +574,7 @@ function buildInitialForm(draftToken?: string) {
 
   return {
     ...defaultForm,
+    subjectName: draft.subjectName ?? defaultForm.subjectName,
     birthDate: draft.birthDate ?? defaultForm.birthDate,
     birthTime: draft.birthTime ?? defaultForm.birthTime,
     placeName: draft.placeName ?? defaultForm.placeName,

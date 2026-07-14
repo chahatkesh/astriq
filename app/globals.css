@@ -24,3 +24,80 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+.kundli-paper {
+  max-width: 794px;
+  min-height: min(1123px, calc(100vw * 1.414));
+  border: 1px solid #9f8765;
+  background-color: #fbf6e9;
+  background-image:
+    linear-gradient(rgba(111, 80, 43, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 80, 43, 0.018) 1px, transparent 1px);
+  background-size: 24px 24px;
+  box-shadow: 0 18px 48px rgba(35, 25, 15, 0.16);
+  color: #2d2318;
+}
+
+.kundli-paper-header {
+  border-bottom: 1px solid #bda47e;
+  padding-bottom: 1.25rem;
+}
+
+.kundli-paper-kicker {
+  color: #8b1e1e;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.kundli-paper-muted,
+.kundli-paper-footer {
+  color: #745f46;
+}
+
+.kundli-paper-rule {
+  height: 2px;
+  background: #8b1e1e;
+}
+
+.kundli-paper-summary,
+.kundli-paper-chart,
+.kundli-paper-planets {
+  border: 1px solid #9f8765;
+}
+
+.kundli-paper-summary-item:not(:last-child) {
+  border-right: 1px solid #cbb794;
+}
+
+.kundli-paper-center,
+.kundli-paper-house {
+  border: 1px solid #bda47e;
+}
+
+.kundli-paper-center {
+  background: rgba(139, 30, 30, 0.035);
+}
+
+.kundli-paper-planet-tag {
+  border: 1px solid #c1aa84;
+  color: #493923;
+}
+
+.kundli-paper-planets > li {
+  border-bottom: 1px solid #cbb794;
+  border-right: 1px solid #cbb794;
+}
+
+.kundli-paper-planets > li:nth-child(3n) {
+  border-right: 0;
+}
+
+.kundli-paper-planets > li:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+
+.kundli-paper-footer {
+  border-top: 1px solid #bda47e;
+}

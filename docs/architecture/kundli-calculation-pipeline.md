@@ -11,7 +11,7 @@ The Kundli flow follows that structure:
 3. `app/api/kundli/route.ts` enforces authentication, checks per-user quota from `MAX_CHARTS_PER_USER`, then calls `generateBirthChart`.
 4. `services/birth-chart-service.ts` validates input, normalizes location data, and computes JPL-grade planetary positions via `js-ephemeris` (`jpl_spice` backend contract).
 5. `services/user-chart-service.ts` persists generated charts to `packages/database` and returns updated quota state.
-6. `components/kundli/KundliChart.tsx` renders houses, signs, planets, nakshatras, degrees, and retrograde status, localizing astrology vocabulary through `lib/i18n/glossary.ts`.
+6. `components/kundli/KundliChart.tsx` renders the key placements and planetary positions on an A4-proportioned paper surface, localizing astrology vocabulary through `lib/i18n/glossary.ts`. `lib/kundli/chart-pdf.ts` exports that surface as a single-page PDF entirely in the browser.
 
 ## Calculation Backend
 
@@ -39,6 +39,8 @@ The engine reads one JSON object from stdin:
   "houseSystem": "whole_sign"
 }
 ```
+
+The authenticated workspace requires `subjectName`, preserves it in the login draft, and sends it through this contract so saved chart history and PDF exports retain the user-provided chart name.
 
 `timezoneOffsetMinutes` is minutes east of UTC. The service computes it from `birthDate`, `birthTime`, and `timeZone`. The current UI does not expose manual UTC offset input.
 
@@ -72,7 +74,7 @@ profile and any future backend adjustment must update fixtures and metadata.
 1. Build the validated birth-details flow and API contract.
 2. Normalize IANA time-zone data at the service boundary.
 3. Compile and test the native C++ CLI engine.
-4. Render the visual Kundli and tabular planetary positions.
+4. Render the visual Kundli and compact planetary positions on an A4 paper surface with browser-side PDF export.
 5. Add retention and account-level chart management capabilities on top of saved charts.
 6. Expand accuracy fixtures for additional bodies and timezone edge windows.
 7. Add Navamsa, dashas, yogas, aspects, doshas, matching, and report generation as separate service capabilities.

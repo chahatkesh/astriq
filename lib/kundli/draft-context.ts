@@ -1,4 +1,5 @@
 export type KundliDraftContext = {
+  subjectName?: string;
   birthDate?: string;
   birthTime?: string;
   placeName?: string;
