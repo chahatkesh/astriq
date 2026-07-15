@@ -10,16 +10,16 @@ languages.
 - Locale routing: App Router serves every locale under `/{locale}` and
   middleware redirects unprefixed paths to the default locale.
 - Glossary IDs: a stable astrology glossary maps engine IDs to localized labels.
-- Indic fonts: locale-aware webfont selection with bundled Devanagari and
-  Bengali scripts, falling back to the base Latin UI font.
+- Script fonts: locale-aware Noto Sans webfonts for every supported script
+  (Devanagari, Bengali, Gujarati, Gurmukhi, Kannada, Malayalam, Oriya, Tamil,
+  Telugu, Arabic, Ol Chiki, Meetei Mayek), with Latin UI text via Geist.
 - UI dictionary fallback: unsupported or incomplete dictionaries fall back to
-  English.
-- Kundli workspace dictionaries and glossary: first-pass draft coverage across
-  all supported locale codes.
-- Landing, auth, account, and chart-history copy also resolve through
-  `AppStrings` with draft coverage for every supported locale.
-- Related languages share draft dictionaries where native-language review is
-  still pending.
+  English for missing keys.
+- Dedicated locale dictionaries: each supported locale has its own AppStrings
+  override and glossary (no Hindi/Bengali/Urdu alias sharing).
+- Landing, auth, account, chart history, and kundli workspace copy resolve
+  through `AppStrings` with first-pass draft coverage for every locale.
+- All locales remain `translationStatus: "draft"` until native-language QA.
 
 ## Locale Registry
 
@@ -48,12 +48,13 @@ middleware and the `app/[locale]` segment.
 ## Message Dictionaries
 
 UI strings for landing, auth, account chrome, chart history, and the kundli
-workspace live in `lib/i18n/app-strings.ts`.
+workspace live in `lib/i18n/dictionaries/` and resolve through
+`lib/i18n/app-strings.ts`.
 
-`AppStrings.forLocale(localeCode)` resolves the locale dictionary, applying
-draft locale overrides and falling back to English for missing keys or unknown
-locales. Use `formatAppString` for templates that interpolate values such as
-`{name}`, `{count}`, `{used}`, `{limit}`, and `{when}`.
+`AppStrings.forLocale(localeCode)` merges the English base dictionary with the
+locale override and falls back to English for missing keys or unknown locales.
+Use `formatAppString` for templates that interpolate values such as `{name}`,
+`{count}`, `{used}`, `{limit}`, and `{when}`.
 
 Do not hardcode user-facing copy in React components. Resolve strings through
 `AppStrings.forLocale` and pass the dictionary (or individual keys) as props.
@@ -63,22 +64,23 @@ engine output. Keep those as stable IDs and localize labels at the UI layer.
 
 ## Astrology Glossary
 
-Stable astrology term IDs live in `lib/i18n/glossary.ts`. The engine emits
-English IDs (`sun`, `aries`, `nakshatra`) and the UI calls `localizeTerm` to
-render localized labels. Unknown IDs echo back so new vocabulary never renders
-empty, and unknown locale codes still fall back to English.
+Stable astrology term IDs live in `lib/i18n/glossaries/` and export through
+`lib/i18n/glossary.ts`. The engine emits English IDs (`sun`, `aries`,
+`nakshatra`) and the UI calls `localizeTerm` to render localized labels. Unknown
+IDs echo back so new vocabulary never renders empty, and unknown locale codes
+still fall back to English.
 
 ## Fonts
 
 `lib/i18n/fonts.ts` maps each locale to a script and returns a `font-family`
-stack. The root layout registers the bundled `next/font` script variables
-(currently Devanagari and Bengali). Adding a new script requires wiring one more
-`next/font` variable in the layout and `fonts.ts`.
+stack. The root layout registers bundled `next/font` variables for every script
+used by the locale registry. Non-Latin script fonts use `preload: false` to
+limit first-load weight; Devanagari remains preloaded as the default Indic
+script.
 
 ## Next Steps
 
 1. Run native-language QA and glossary review per locale before marking
    translations complete.
-2. Bundle the remaining Indic script fonts (Gujarati, Gurmukhi, Kannada,
-   Malayalam, Oriya, Tamil, Telugu, Arabic) as translations land.
+2. Localize nakshatra name IDs (27 names) at the glossary layer.
 3. Persist the selected locale so navigation and refreshes keep the choice.

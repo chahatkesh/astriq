@@ -25,6 +25,14 @@ describe("glossary", () => {
     expect(getGlossary("mr")).not.toBe(getGlossary("hi"));
   });
 
+  it("uses dedicated glossaries for former alias locales", () => {
+    expect(localizeTerm("sa", "sun")).toBe("सूर्यः");
+    expect(localizeTerm("sa", "sun")).not.toBe(localizeTerm("hi", "sun"));
+    expect(getGlossary("as")).not.toBe(getGlossary("bn"));
+    expect(localizeTerm("ks", "sun")).not.toBe(localizeTerm("ur", "sun"));
+    expect(localizeTerm("sd", "sun")).not.toBe(localizeTerm("ur", "sun"));
+  });
+
   it("echoes unknown term IDs so nothing renders empty", () => {
     expect(localizeTerm("en", "uranus")).toBe("uranus");
   });

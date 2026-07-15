@@ -120,7 +120,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
         ref={paperRef}
       >
         <header className="kundli-paper-header text-center">
-          <p className="kundli-paper-kicker">Astriq</p>
+          <p className="kundli-paper-kicker">{messages.app.title}</p>
           <h3 className="mt-2 text-2xl leading-tight font-semibold sm:text-3xl">
             {chart.subjectName || messages.chart.unnamed}
           </h3>

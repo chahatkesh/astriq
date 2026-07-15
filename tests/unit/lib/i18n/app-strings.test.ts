@@ -7,13 +7,14 @@ describe("AppStrings", () => {
     const strings = AppStrings.forLocale("en");
 
     expect(strings.app.title).toBe("Astriq");
-    expect(strings.form.submit).toBe("Generate Kundli");
+    expect(strings.form.submit).toBe("Generate kundli");
     expect(strings.landing.generate).toBe("Generate kundli");
+    expect(strings.landing.workspaceEyebrow).toBe("Kundli workspace");
     expect(strings.auth.signInTitle).toBe("Sign in");
     expect(strings.account.logout).toBe("Log out");
-    expect(strings.history.title).toBe("Saved charts");
+    expect(strings.history.title).toBe("Saved kundlis");
     expect(strings.states.chartNotFound).toBe(
-      "That saved chart could not be found.",
+      "That saved kundli could not be found.",
     );
   });
 
@@ -37,6 +38,20 @@ describe("AppStrings", () => {
     expect(strings.form.submit).toBe("कुंडली तयार करा");
     expect(strings.form.submit).not.toBe(hindi.form.submit);
     expect(strings.landing.generate).toBe("कुंडली तयार करा");
+  });
+
+  it("uses dedicated copy for former alias locales", () => {
+    const hindi = AppStrings.forLocale("hi");
+    const bengali = AppStrings.forLocale("bn");
+    const urdu = AppStrings.forLocale("ur");
+
+    expect(AppStrings.forLocale("sa").form.submit).not.toBe(hindi.form.submit);
+    expect(AppStrings.forLocale("ne").form.submit).not.toBe(hindi.form.submit);
+    expect(AppStrings.forLocale("as").form.submit).not.toBe(
+      bengali.form.submit,
+    );
+    expect(AppStrings.forLocale("ks").form.submit).not.toBe(urdu.form.submit);
+    expect(AppStrings.forLocale("sd").form.submit).not.toBe(urdu.form.submit);
   });
 
   it("provides localized dictionaries for all supported locale codes", () => {
@@ -63,10 +78,10 @@ describe("AppStrings", () => {
       "Welcome, Chahat",
     );
     expect(
-      formatAppString("{used} of {limit} charts used.", {
+      formatAppString("{used} of {limit} kundlis used.", {
         used: 2,
         limit: 5,
       }),
-    ).toBe("2 of 5 charts used.");
+    ).toBe("2 of 5 kundlis used.");
   });
 });

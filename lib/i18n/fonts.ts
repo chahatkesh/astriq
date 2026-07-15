@@ -19,7 +19,9 @@ export type FontScript =
   | "oriya"
   | "tamil"
   | "telugu"
-  | "arabic";
+  | "arabic"
+  | "olChiki"
+  | "meeteiMayek";
 
 const localeScripts: Record<LocaleCode, FontScript> = {
   en: "latin",
@@ -34,13 +36,13 @@ const localeScripts: Record<LocaleCode, FontScript> = {
   kok: "devanagari",
   mai: "devanagari",
   ml: "malayalam",
-  mni: "bengali",
+  mni: "meeteiMayek",
   mr: "devanagari",
   ne: "devanagari",
   or: "oriya",
   pa: "gurmukhi",
   sa: "devanagari",
-  sat: "devanagari",
+  sat: "olChiki",
   sd: "arabic",
   ta: "tamil",
   te: "telugu",
@@ -55,14 +57,16 @@ const scriptFontVariables: Record<FontScript, string | null> = {
   latin: null,
   devanagari: "var(--font-noto-devanagari)",
   bengali: "var(--font-noto-bengali)",
-  gujarati: null,
-  gurmukhi: null,
-  kannada: null,
-  malayalam: null,
-  oriya: null,
-  tamil: null,
-  telugu: null,
-  arabic: null,
+  gujarati: "var(--font-noto-gujarati)",
+  gurmukhi: "var(--font-noto-gurmukhi)",
+  kannada: "var(--font-noto-kannada)",
+  malayalam: "var(--font-noto-malayalam)",
+  oriya: "var(--font-noto-oriya)",
+  tamil: "var(--font-noto-tamil)",
+  telugu: "var(--font-noto-telugu)",
+  arabic: "var(--font-noto-arabic)",
+  olChiki: "var(--font-noto-ol-chiki)",
+  meeteiMayek: "var(--font-noto-meetei-mayek)",
 };
 
 export function getFontScript(localeCode: LocaleCode): FontScript {
