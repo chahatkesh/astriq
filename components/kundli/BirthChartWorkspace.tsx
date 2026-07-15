@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { KundliChart } from "@/components/kundli/KundliChart";
 import { usePlaceSearch } from "@/hooks/use-place-search";
 import { getDefaultPostAuthPath } from "@/lib/auth/redirect";
@@ -20,6 +26,7 @@ import {
   decodeDraftContext,
   encodeDraftContext,
 } from "@/lib/kundli/draft-context";
+import { getDashboardPath } from "@/lib/kundli/dashboard-path";
 import { locationPresets } from "@/lib/kundli/location-presets";
 import type {
   BirthChartApiError,
@@ -57,6 +64,8 @@ type BirthChartWorkspaceProps = {
   authenticated?: boolean;
   userDisplayName?: string;
   initialDraftToken?: string;
+  initialChartId?: string;
+  initialActiveChart?: UserChartSummary | null;
   initialChartHistory?: UserChartSummary[];
   initialQuota?: ChartQuota;
 };
@@ -66,6 +75,8 @@ export function BirthChartWorkspace({
   authenticated = false,
   userDisplayName,
   initialDraftToken,
+  initialChartId,
+  initialActiveChart = null,
   initialChartHistory = [],
   initialQuota,
 }: BirthChartWorkspaceProps) {
@@ -74,7 +85,15 @@ export function BirthChartWorkspace({
   const [form, setForm] = useState<FormState>(() =>
     buildInitialForm(initialDraftToken),
   );
-  const [chart, setChart] = useState<BirthChartResult | null>(null);
+  const [chart, setChart] = useState<BirthChartResult | null>(
+    initialActiveChart?.chart ?? null,
+  );
+  const [activeChartId, setActiveChartId] = useState<string | null>(
+    initialActiveChart?.id ?? null,
+  );
+  const [showChartNotFound, setShowChartNotFound] = useState(
+    Boolean(initialChartId && !initialActiveChart),
+  );
   const [chartHistory, setChartHistory] =
     useState<UserChartSummary[]>(initialChartHistory);
   const [quota, setQuota] = useState<ChartQuota | null>(initialQuota ?? null);
@@ -93,10 +112,33 @@ export function BirthChartWorkspace({
 
   const hasQuota = !authenticated || !quota || quota.remaining > 0;
 
+  useEffect(() => {
+    if (!initialChartId || initialActiveChart) {
+      return;
+    }
+
+    router.replace(getDashboardPath(localeCode), { scroll: false });
+  }, [initialActiveChart, initialChartId, localeCode, router]);
+
+  function syncChartUrl(chartId: string | null) {
+    if (!authenticated) {
+      return;
+    }
+
+    setActiveChartId(chartId);
+    router.replace(
+      getDashboardPath(localeCode, chartId ? { chart: chartId } : {}),
+      { scroll: false },
+    );
+  }
+
   function changeLocale(nextLocale: LocaleCode) {
     setLocaleCode(nextLocale);
     const target = authenticated
-      ? `/${nextLocale}/dashboard`
+      ? getDashboardPath(
+          nextLocale,
+          activeChartId ? { chart: activeChartId } : {},
+        )
       : `/${nextLocale}`;
     router.push(target);
   }
@@ -206,6 +248,8 @@ export function BirthChartWorkspace({
 
       setChart(body.chart);
       setQuota(body.quota);
+      syncChartUrl(body.savedChart.id);
+      setShowChartNotFound(false);
       setChartHistory((current) => {
         const withoutDuplicate = current.filter(
           (item) => item.id !== body.savedChart.id,
@@ -555,6 +599,11 @@ export function BirthChartWorkspace({
           </section>
 
           <section aria-live="polite" className="min-w-0">
+            {showChartNotFound ? (
+              <p className="mb-4 border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-100">
+                {messages.states.chartNotFound}
+              </p>
+            ) : null}
             {isSubmitting ? <LoadingState messages={messages} /> : null}
             {!isSubmitting && chart ? (
               <KundliChart
@@ -571,7 +620,11 @@ export function BirthChartWorkspace({
               <ChartHistoryPanel
                 history={chartHistory}
                 messages={messages}
-                onSelectChart={(selected) => setChart(selected.chart)}
+                onSelectChart={(selected) => {
+                  setChart(selected.chart);
+                  syncChartUrl(selected.id);
+                  setShowChartNotFound(false);
+                }}
               />
             ) : null}
           </section>

@@ -15,6 +15,7 @@ export {
 export {
   ChartQuotaError,
   ensureUserCanGenerateChart,
+  getUserChartById,
   getUserChartHistory,
   getUserChartQuota,
   saveGeneratedChartForUser,

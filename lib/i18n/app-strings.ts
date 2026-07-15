@@ -92,6 +92,7 @@ const englishAppStrings = {
     loadingTitle: "Preparing chart data",
     emptyEyebrow: "No chart yet",
     emptyTitle: "Enter precise birth details to generate a Kundli.",
+    chartNotFound: "That saved chart could not be found.",
   },
   chart: {
     kundli: "Kundli",

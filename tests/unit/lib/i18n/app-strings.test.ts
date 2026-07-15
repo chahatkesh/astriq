@@ -12,6 +12,9 @@ describe("AppStrings", () => {
     expect(strings.auth.signInTitle).toBe("Sign in");
     expect(strings.account.logout).toBe("Log out");
     expect(strings.history.title).toBe("Saved charts");
+    expect(strings.states.chartNotFound).toBe(
+      "That saved chart could not be found.",
+    );
   });
 
   it("applies Hindi locale overrides across all sections", () => {

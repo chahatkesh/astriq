@@ -4,6 +4,7 @@ import { getDefaultPostAuthPath } from "@/lib/auth/redirect";
 import { isSupportedLocale, type LocaleCode } from "@/lib/i18n/locales";
 import {
   getSessionUserFromCookieStore,
+  getUserChartById,
   getUserChartHistory,
   getUserChartQuota,
 } from "@/services";
@@ -35,11 +36,15 @@ export default async function DashboardPage({
 
   const resolvedParams = await searchParams;
   const draftToken = getSingleParam(resolvedParams.draft) ?? undefined;
+  const chartId = getSingleParam(resolvedParams.chart) ?? undefined;
+  const activeChart = chartId ? await getUserChartById(user.id, chartId) : null;
 
   return (
     <BirthChartWorkspace
       authenticated
+      initialActiveChart={activeChart}
       initialChartHistory={history}
+      initialChartId={chartId}
       initialDraftToken={draftToken}
       initialLocale={locale as LocaleCode}
       initialQuota={quota}

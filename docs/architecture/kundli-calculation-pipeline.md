@@ -7,7 +7,7 @@ The app uses one Next.js App Router surface in `app/`. Route handlers stay thin 
 The Kundli flow follows that structure:
 
 1. Guests start on `app/[locale]/page.tsx`, which shows a landing form for Date, Time, and Location placeholders and redirects generation intent through login.
-2. Authenticated users work in `app/[locale]/dashboard/page.tsx`, where `components/kundli/BirthChartWorkspace.tsx` submits chart generation requests and shows saved chart history.
+2. Authenticated users work in `app/[locale]/dashboard/page.tsx`, where `components/kundli/BirthChartWorkspace.tsx` submits chart generation requests and shows saved chart history. Dashboard deep links use `?draft=` to restore birth-form fields after login and `?chart=<id>` to reopen a saved chart by ownership-scoped id.
 3. `app/api/kundli/route.ts` enforces authentication, checks per-user quota from `MAX_CHARTS_PER_USER`, then calls `generateBirthChart`.
 4. `services/birth-chart-service.ts` validates input, normalizes location data, and computes JPL-grade planetary positions via `js-ephemeris` (`jpl_spice` backend contract).
 5. `services/user-chart-service.ts` persists generated charts to `packages/database` and returns updated quota state.
