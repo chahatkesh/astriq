@@ -16,6 +16,8 @@ languages.
   English.
 - Kundli workspace dictionaries and glossary: first-pass draft coverage across
   all supported locale codes.
+- Landing, auth, account, and chart-history copy also resolve through
+  `AppStrings` with draft coverage for every supported locale.
 - Related languages share draft dictionaries where native-language review is
   still pending.
 
@@ -45,10 +47,16 @@ middleware and the `app/[locale]` segment.
 
 ## Message Dictionaries
 
-Kundli workspace UI strings live in `lib/i18n/app-strings.ts`.
+UI strings for landing, auth, account chrome, chart history, and the kundli
+workspace live in `lib/i18n/app-strings.ts`.
 
 `AppStrings.forLocale(localeCode)` resolves the locale dictionary, applying
-draft locale overrides and falling back to English only for unknown locales.
+draft locale overrides and falling back to English for missing keys or unknown
+locales. Use `formatAppString` for templates that interpolate values such as
+`{name}`, `{count}`, `{used}`, `{limit}`, and `{when}`.
+
+Do not hardcode user-facing copy in React components. Resolve strings through
+`AppStrings.forLocale` and pass the dictionary (or individual keys) as props.
 
 Do not translate engine keys such as `sun`, `moon`, `aries`, or `ashwini` in the
 engine output. Keep those as stable IDs and localize labels at the UI layer.

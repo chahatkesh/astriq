@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
+import { AppStrings } from "@/lib/i18n/app-strings";
 import type { LocaleCode } from "@/lib/i18n/locales";
 
 type AuthFormMode = "login" | "register";
@@ -28,6 +29,7 @@ export function AuthForm({
   draftToken,
 }: AuthFormProps) {
   const router = useRouter();
+  const messages = AppStrings.forLocale(locale);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,20 +37,24 @@ export function AuthForm({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const title = mode === "login" ? "Sign in" : "Create account";
+  const title =
+    mode === "login" ? messages.auth.signInTitle : messages.auth.registerTitle;
   const subtitle =
     mode === "login"
-      ? "Sign in to generate and save your kundli charts."
-      : "Create an account to generate and store your kundli charts.";
-  const submitText = mode === "login" ? "Sign in" : "Create account";
+      ? messages.auth.signInSubtitle
+      : messages.auth.registerSubtitle;
+  const submitText =
+    mode === "login"
+      ? messages.auth.submitSignIn
+      : messages.auth.submitRegister;
   const alternatePath =
     mode === "login"
       ? `/${locale}/register${buildQuery(nextPath, draftToken)}`
       : `/${locale}/login${buildQuery(nextPath, draftToken)}`;
   const alternateLabel =
     mode === "login"
-      ? "Need an account? Register"
-      : "Already have an account? Sign in";
+      ? messages.auth.needAccount
+      : messages.auth.alreadyHaveAccount;
 
   const successRedirectPath = useMemo(() => {
     if (!draftToken) {
@@ -85,7 +91,7 @@ export function AuthForm({
 
       const body = (await response.json()) as AuthErrorBody;
       if (!response.ok) {
-        setFormError(body.error?.message ?? "Authentication failed.");
+        setFormError(body.error?.message ?? messages.auth.authFailed);
         setFieldErrors(body.error?.fields ?? {});
         return;
       }
@@ -93,7 +99,7 @@ export function AuthForm({
       router.replace(successRedirectPath);
       router.refresh();
     } catch {
-      setFormError("Authentication failed. Please try again.");
+      setFormError(messages.auth.authFailedRetry);
     } finally {
       setIsSubmitting(false);
     }
@@ -104,7 +110,7 @@ export function AuthForm({
       <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-8 sm:px-6">
         <section className="w-full max-w-md border border-foreground/15 bg-background p-6 sm:p-8">
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
-            Kundli account
+            {messages.auth.eyebrow}
           </p>
           <h1 className="mt-2 text-3xl font-semibold">{title}</h1>
           <p className="mt-2 text-sm text-foreground/65">{subtitle}</p>
@@ -114,28 +120,32 @@ export function AuthForm({
               <Field
                 error={fieldErrors.displayName}
                 htmlFor="displayName"
-                label="Display name"
+                label={messages.auth.displayName}
               >
                 <input
                   className={inputClassName}
                   id="displayName"
                   name="displayName"
                   onChange={(event) => setDisplayName(event.target.value)}
-                  placeholder="Your name"
+                  placeholder={messages.auth.displayNamePlaceholder}
                   type="text"
                   value={displayName}
                 />
               </Field>
             ) : null}
 
-            <Field error={fieldErrors.email} htmlFor="email" label="Email">
+            <Field
+              error={fieldErrors.email}
+              htmlFor="email"
+              label={messages.auth.email}
+            >
               <input
                 autoComplete="email"
                 className={inputClassName}
                 id="email"
                 name="email"
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
+                placeholder={messages.auth.emailPlaceholder}
                 required
                 type="email"
                 value={email}
@@ -145,7 +155,7 @@ export function AuthForm({
             <Field
               error={fieldErrors.password}
               htmlFor="password"
-              label="Password"
+              label={messages.auth.password}
             >
               <input
                 autoComplete={
@@ -155,7 +165,7 @@ export function AuthForm({
                 id="password"
                 name="password"
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="At least 8 characters"
+                placeholder={messages.auth.passwordPlaceholder}
                 required
                 type="password"
                 value={password}
@@ -173,7 +183,7 @@ export function AuthForm({
               disabled={isSubmitting}
               type="submit"
             >
-              {isSubmitting ? "Please wait" : submitText}
+              {isSubmitting ? messages.auth.submitting : submitText}
             </button>
           </form>
 
@@ -182,7 +192,7 @@ export function AuthForm({
               className="text-foreground/75 underline-offset-4 hover:underline"
               href={`/${locale}`}
             >
-              Back to landing
+              {messages.auth.backToLanding}
             </Link>
             <Link
               className="text-foreground/75 underline-offset-4 hover:underline"

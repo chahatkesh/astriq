@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppStrings } from "@/lib/i18n/app-strings";
+import { AppStrings, formatAppString } from "@/lib/i18n/app-strings";
 import { localeCodes } from "@/lib/i18n/locales";
 
 describe("AppStrings", () => {
@@ -8,13 +8,23 @@ describe("AppStrings", () => {
 
     expect(strings.app.title).toBe("Astriq");
     expect(strings.form.submit).toBe("Generate Kundli");
+    expect(strings.landing.generate).toBe("Generate kundli");
+    expect(strings.auth.signInTitle).toBe("Sign in");
+    expect(strings.account.logout).toBe("Log out");
+    expect(strings.history.title).toBe("Saved charts");
   });
 
-  it("applies Hindi locale overrides", () => {
+  it("applies Hindi locale overrides across all sections", () => {
     const strings = AppStrings.forLocale("hi");
 
     expect(strings.app.title).toBe("Astriq");
     expect(strings.table.retrograde).toBe("वक्री");
+    expect(strings.landing.signIn).toBe("साइन इन");
+    expect(strings.auth.registerTitle).toBe("खाता बनाएँ");
+    expect(strings.account.logout).toBe("लॉग आउट");
+    expect(strings.history.empty).toBe("अभी कोई सहेजी हुई कुंडली नहीं है।");
+    expect(strings.form.chartName).toBe("कुंडली का नाम");
+    expect(strings.chart.downloadPdf).toBe("PDF डाउनलोड करें");
   });
 
   it("uses dedicated Marathi copy for mr locale", () => {
@@ -23,6 +33,7 @@ describe("AppStrings", () => {
 
     expect(strings.form.submit).toBe("कुंडली तयार करा");
     expect(strings.form.submit).not.toBe(hindi.form.submit);
+    expect(strings.landing.generate).toBe("कुंडली तयार करा");
   });
 
   it("provides localized dictionaries for all supported locale codes", () => {
@@ -36,6 +47,23 @@ describe("AppStrings", () => {
       const strings = AppStrings.forLocale(localeCode);
       expect(strings.app.language).not.toBe(english.app.language);
       expect(strings.form.submit).not.toBe(english.form.submit);
+      expect(strings.landing.headline).not.toBe(english.landing.headline);
+      expect(strings.auth.signInTitle).not.toBe(english.auth.signInTitle);
+      expect(strings.account.logout).not.toBe(english.account.logout);
+      expect(strings.history.title).not.toBe(english.history.title);
+      expect(strings.chart.downloadPdf).not.toBe(english.chart.downloadPdf);
     }
+  });
+
+  it("formats template placeholders", () => {
+    expect(formatAppString("Welcome, {name}", { name: "Chahat" })).toBe(
+      "Welcome, Chahat",
+    );
+    expect(
+      formatAppString("{used} of {limit} charts used.", {
+        used: 2,
+        limit: 5,
+      }),
+    ).toBe("2 of 5 charts used.");
   });
 });

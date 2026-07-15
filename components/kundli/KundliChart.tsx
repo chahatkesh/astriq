@@ -136,6 +136,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
             detail={`${formatDegrees(
               chart.ascendant.degreeInSign,
               localeCode,
+              messages.chart.degreeUnit,
             )} / ${chart.ascendant.nakshatra.name} ${formatNumber(
               chart.ascendant.nakshatra.pada,
               localeCode,
@@ -144,12 +145,24 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
             value={localizeSign(chart.ascendant.sign, localeCode)}
           />
           <SummaryItem
-            detail={moon ? formatPlanetDetail(moon, localeCode) : "-"}
+            detail={
+              moon
+                ? formatPlanetDetail(
+                    moon,
+                    localeCode,
+                    messages.chart.degreeUnit,
+                  )
+                : "-"
+            }
             label={messages.chart.moon}
             value={moon ? localizeSign(moon.sign, localeCode) : "-"}
           />
           <SummaryItem
-            detail={sun ? formatPlanetDetail(sun, localeCode) : "-"}
+            detail={
+              sun
+                ? formatPlanetDetail(sun, localeCode, messages.chart.degreeUnit)
+                : "-"
+            }
             label={messages.chart.sun}
             value={sun ? localizeSign(sun.sign, localeCode) : "-"}
           />
@@ -157,7 +170,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
 
         <div className="mx-auto mt-5 w-full max-w-md">
           <div
-            aria-label="Vedic birth chart with twelve houses"
+            aria-label={messages.chart.ariaLabel}
             className="kundli-paper-chart relative grid aspect-square w-full grid-cols-4 grid-rows-4"
           >
             <div className="kundli-paper-center col-start-2 col-span-2 row-start-2 row-span-2 flex flex-col items-center justify-center p-3 text-center">
@@ -168,7 +181,11 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
                 {localizeSign(chart.ascendant.sign, localeCode)}
               </span>
               <span className="kundli-paper-muted font-mono text-xs sm:text-sm">
-                {formatDegrees(chart.ascendant.degreeInSign, localeCode)}
+                {formatDegrees(
+                  chart.ascendant.degreeInSign,
+                  localeCode,
+                  messages.chart.degreeUnit,
+                )}
               </span>
               <span className="kundli-paper-muted mt-2 text-[0.65rem] sm:text-xs">
                 {chart.ascendant.nakshatra.name}{" "}
@@ -181,6 +198,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
                 house={house}
                 key={house.number}
                 localeCode={localeCode}
+                messages={messages}
                 planetByKey={planetByKey}
               />
             ))}
@@ -202,15 +220,22 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
                 <div className="flex items-baseline justify-between gap-1">
                   <span className="min-w-0 wrap-break-word text-xs font-semibold sm:text-sm">
                     {localizeTerm(localeCode, planet.key)}
-                    {planet.retrograde ? " (R)" : ""}
+                    {planet.retrograde
+                      ? ` ${messages.chart.retrogradeMarker}`
+                      : ""}
                   </span>
                   <span className="kundli-paper-muted font-mono text-[0.6rem] sm:text-xs">
-                    H{formatNumber(planet.house, localeCode)}
+                    {messages.chart.housePrefix}
+                    {formatNumber(planet.house, localeCode)}
                   </span>
                 </div>
                 <p className="kundli-paper-muted mt-1 wrap-break-word text-[0.6rem] sm:text-xs">
                   {localizeSign(planet.sign, localeCode)} ·{" "}
-                  {formatDegrees(planet.degreeInSign, localeCode)}
+                  {formatDegrees(
+                    planet.degreeInSign,
+                    localeCode,
+                    messages.chart.degreeUnit,
+                  )}
                 </p>
               </li>
             ))}
@@ -219,7 +244,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
 
         <footer className="kundli-paper-footer mt-5 pt-3 text-center text-[0.6rem] leading-4 sm:text-xs">
           <p>
-            Lahiri sidereal · Whole sign houses ·{" "}
+            {messages.chart.footerProfile} ·{" "}
             {chart.metadata.calculationProfile?.ephemeris ??
               chart.metadata.ephemeris}
           </p>
@@ -261,10 +286,12 @@ function SummaryItem({
 function HouseCell({
   house,
   localeCode,
+  messages,
   planetByKey,
 }: {
   house: KundliHouse;
   localeCode: LocaleCode;
+  messages: AppStringsDictionary;
   planetByKey: Map<string, PlanetPosition>;
 }) {
   return (
@@ -274,7 +301,8 @@ function HouseCell({
     >
       <div className="flex items-start justify-between gap-1">
         <span className="kundli-paper-muted font-mono text-[0.55rem] sm:text-xs">
-          H{house.number}
+          {messages.chart.housePrefix}
+          {house.number}
         </span>
         <span className="max-w-[75%] wrap-break-word text-right text-[0.55rem] font-medium leading-tight sm:text-xs">
           {localizeSign(house.sign, localeCode)}
@@ -300,13 +328,17 @@ function HouseCell({
   );
 }
 
-function formatDegrees(value: number, localeCode: LocaleCode) {
+function formatDegrees(
+  value: number,
+  localeCode: LocaleCode,
+  degreeUnit: string,
+) {
   const totalMinutes = Math.round(value * 60);
   const degrees = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   const degreeText = formatNumber(degrees, localeCode).padStart(2, "0");
   const minuteText = formatNumber(minutes, localeCode).padStart(2, "0");
-  return `${degreeText}deg ${minuteText}'`;
+  return `${degreeText}${degreeUnit} ${minuteText}'`;
 }
 
 function formatOffset(minutes: number) {
@@ -319,8 +351,12 @@ function formatOffset(minutes: number) {
   return `UTC${sign}${hours}:${mins}`;
 }
 
-function formatPlanetDetail(planet: PlanetPosition, localeCode: LocaleCode) {
-  return `${formatDegrees(planet.degreeInSign, localeCode)} / ${
+function formatPlanetDetail(
+  planet: PlanetPosition,
+  localeCode: LocaleCode,
+  degreeUnit: string,
+) {
+  return `${formatDegrees(planet.degreeInSign, localeCode, degreeUnit)} / ${
     planet.nakshatra.name
   } ${formatNumber(planet.nakshatra.pada, localeCode)}`;
 }

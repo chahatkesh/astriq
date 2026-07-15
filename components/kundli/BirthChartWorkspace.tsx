@@ -5,7 +5,11 @@ import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { KundliChart } from "@/components/kundli/KundliChart";
 import { usePlaceSearch } from "@/hooks/use-place-search";
 import { getDefaultPostAuthPath } from "@/lib/auth/redirect";
-import { AppStrings, type AppStringsDictionary } from "@/lib/i18n/app-strings";
+import {
+  AppStrings,
+  formatAppString,
+  type AppStringsDictionary,
+} from "@/lib/i18n/app-strings";
 import {
   defaultLocale,
   getSupportedLocale,
@@ -288,7 +292,9 @@ export function BirthChartWorkspace({
             </h1>
             {authenticated && userDisplayName ? (
               <p className="mt-2 text-sm text-foreground/65">
-                Welcome, {userDisplayName}
+                {formatAppString(messages.account.welcome, {
+                  name: userDisplayName,
+                })}
               </p>
             ) : null}
           </div>
@@ -318,14 +324,16 @@ export function BirthChartWorkspace({
             {authenticated ? (
               <div className="flex items-center justify-between gap-2">
                 <p className="font-mono text-xs text-foreground/60">
-                  Remaining charts: {quota?.remaining ?? "-"}
+                  {formatAppString(messages.account.remainingCharts, {
+                    count: quota?.remaining ?? "-",
+                  })}
                 </p>
                 <button
                   className="border border-foreground/20 px-2 py-1 text-xs font-medium transition hover:bg-foreground hover:text-background"
                   onClick={handleLogout}
                   type="button"
                 >
-                  Log out
+                  {messages.account.logout}
                 </button>
               </div>
             ) : null}
@@ -338,7 +346,10 @@ export function BirthChartWorkspace({
               <h2 className="text-base font-semibold">{messages.form.title}</h2>
               {authenticated && quota ? (
                 <p className="mt-1 text-xs text-foreground/60">
-                  {quota.used} of {quota.limit} charts used.
+                  {formatAppString(messages.account.chartsUsed, {
+                    used: quota.used,
+                    limit: quota.limit,
+                  })}
                 </p>
               ) : null}
             </div>
@@ -512,7 +523,7 @@ export function BirthChartWorkspace({
                       timezoneOffsetMinutes: event.target.value,
                     })
                   }
-                  placeholder="Optional, e.g. 330 or -300"
+                  placeholder={messages.account.offsetPlaceholder}
                   type="number"
                   value={form.timezoneOffsetMinutes}
                 />
@@ -529,7 +540,7 @@ export function BirthChartWorkspace({
 
               {authenticated && !hasQuota ? (
                 <p className="border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-100">
-                  You have reached your chart generation limit.
+                  {messages.account.quotaExhausted}
                 </p>
               ) : null}
 
@@ -559,6 +570,7 @@ export function BirthChartWorkspace({
             {authenticated ? (
               <ChartHistoryPanel
                 history={chartHistory}
+                messages={messages}
                 onSelectChart={(selected) => setChart(selected.chart)}
               />
             ) : null}
@@ -773,20 +785,22 @@ function EmptyState({ messages }: { messages: AppStringsDictionary }) {
 
 function ChartHistoryPanel({
   history,
+  messages,
   onSelectChart,
 }: {
   history: UserChartSummary[];
+  messages: AppStringsDictionary;
   onSelectChart: (item: UserChartSummary) => void;
 }) {
   return (
     <section className="mt-6 border border-foreground/15 bg-background">
       <div className="border-b border-foreground/15 px-4 py-3">
-        <h2 className="text-base font-semibold">Saved charts</h2>
+        <h2 className="text-base font-semibold">{messages.history.title}</h2>
       </div>
 
       {history.length === 0 ? (
         <p className="px-4 py-6 text-sm text-foreground/60">
-          No saved charts yet.
+          {messages.history.empty}
         </p>
       ) : (
         <ul className="divide-y divide-foreground/10">
@@ -798,13 +812,15 @@ function ChartHistoryPanel({
                 type="button"
               >
                 <span className="text-sm font-medium">
-                  {item.subjectName || "Unnamed chart"}
+                  {item.subjectName || messages.history.unnamed}
                 </span>
                 <span className="text-xs text-foreground/60">
                   {item.placeName} | {item.localDateTime}
                 </span>
                 <span className="font-mono text-xs text-foreground/45">
-                  Saved {formatSavedAt(item.createdAt)}
+                  {formatAppString(messages.history.savedAt, {
+                    when: formatSavedAt(item.createdAt),
+                  })}
                 </span>
               </button>
             </li>

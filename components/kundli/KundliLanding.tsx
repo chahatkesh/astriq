@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { getDefaultPostAuthPath } from "@/lib/auth/redirect";
-import { encodeDraftContext } from "@/lib/kundli/draft-context";
+import { AppStrings } from "@/lib/i18n/app-strings";
 import type { LocaleCode } from "@/lib/i18n/locales";
+import { encodeDraftContext } from "@/lib/kundli/draft-context";
 
 type KundliLandingProps = {
   locale: LocaleCode;
@@ -13,6 +14,7 @@ type KundliLandingProps = {
 
 export function KundliLanding({ locale }: KundliLandingProps) {
   const router = useRouter();
+  const messages = AppStrings.forLocale(locale);
   const [birthDate, setBirthDate] = useState("");
   const [birthTime, setBirthTime] = useState("");
   const [placeName, setPlaceName] = useState("");
@@ -41,22 +43,24 @@ export function KundliLanding({ locale }: KundliLandingProps) {
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-foreground/15 pb-4">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
-              Vedic birth chart
+              {messages.app.eyebrow}
             </p>
-            <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">Astriq</h1>
+            <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">
+              {messages.app.title}
+            </h1>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <Link
               className="border border-foreground/20 px-3 py-2 font-medium transition hover:bg-foreground hover:text-background"
               href={`/${locale}/login`}
             >
-              Sign in
+              {messages.landing.signIn}
             </Link>
             <Link
               className="border border-foreground/20 px-3 py-2 font-medium transition hover:bg-foreground hover:text-background"
               href={`/${locale}/register`}
             >
-              Create account
+              {messages.landing.createAccount}
             </Link>
           </div>
         </header>
@@ -64,25 +68,26 @@ export function KundliLanding({ locale }: KundliLandingProps) {
         <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
-              Production kundli workspace
+              {messages.landing.workspaceEyebrow}
             </p>
             <h2 className="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">
-              Enter birth details and continue after sign in.
+              {messages.landing.headline}
             </h2>
             <p className="mt-4 max-w-xl text-base text-foreground/70">
-              Your draft context is preserved during login, then generation and
-              chart history continue from your dashboard.
+              {messages.landing.description}
             </p>
           </div>
 
           <section className="border border-foreground/15 bg-background p-5 sm:p-6">
-            <h3 className="text-base font-semibold">Start your chart</h3>
+            <h3 className="text-base font-semibold">
+              {messages.landing.startTitle}
+            </h3>
             <p className="mt-1 text-sm text-foreground/65">
-              Placeholder fields: Date, Time, and Location of Birth.
+              {messages.landing.startHint}
             </p>
 
             <form className="mt-5 grid gap-4" onSubmit={handleSubmit}>
-              <Field htmlFor="landingBirthDate" label="Date of birth">
+              <Field htmlFor="landingBirthDate" label={messages.form.birthDate}>
                 <input
                   className={inputClassName}
                   id="landingBirthDate"
@@ -93,7 +98,7 @@ export function KundliLanding({ locale }: KundliLandingProps) {
                 />
               </Field>
 
-              <Field htmlFor="landingBirthTime" label="Time of birth">
+              <Field htmlFor="landingBirthTime" label={messages.form.birthTime}>
                 <input
                   className={inputClassName}
                   id="landingBirthTime"
@@ -104,12 +109,12 @@ export function KundliLanding({ locale }: KundliLandingProps) {
                 />
               </Field>
 
-              <Field htmlFor="landingPlace" label="Location of birth">
+              <Field htmlFor="landingPlace" label={messages.form.placeName}>
                 <input
                   className={inputClassName}
                   id="landingPlace"
                   onChange={(event) => setPlaceName(event.target.value)}
-                  placeholder="City, Country"
+                  placeholder={messages.landing.placePlaceholder}
                   required
                   type="text"
                   value={placeName}
@@ -120,7 +125,7 @@ export function KundliLanding({ locale }: KundliLandingProps) {
                 className="bg-foreground px-4 py-3 text-sm font-semibold text-background transition hover:opacity-90"
                 type="submit"
               >
-                Generate kundli
+                {messages.landing.generate}
               </button>
             </form>
           </section>
