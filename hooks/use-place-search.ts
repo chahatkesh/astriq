@@ -42,10 +42,11 @@ export function usePlaceSearch(query: string): PlaceSearchState {
 
     const controller = new AbortController();
     controllerRef.current = controller;
+    const pendingTimer = setTimeout(() => {
+      setState({ results: null, isSearching: true, error: false });
+    }, 0);
 
     const timer = setTimeout(() => {
-      setState((current) => ({ ...current, isSearching: true, error: false }));
-
       fetch(`/api/places?q=${encodeURIComponent(trimmed)}`, {
         signal: controller.signal,
       })
@@ -67,6 +68,7 @@ export function usePlaceSearch(query: string): PlaceSearchState {
     }, DEBOUNCE_MS);
 
     return () => {
+      clearTimeout(pendingTimer);
       clearTimeout(timer);
       controller.abort();
     };

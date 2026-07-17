@@ -102,7 +102,7 @@ export function AuthForm({
   }
 
   return (
-    <main className="app-surface relative isolate min-h-screen overflow-hidden text-[var(--ink)]">
+    <main className="app-surface relative isolate min-h-screen overflow-hidden text-(--ink)">
       <div
         aria-hidden="true"
         className="app-grid absolute inset-0 opacity-60"
@@ -113,14 +113,14 @@ export function AuthForm({
             <p className="font-display text-2xl leading-none font-semibold sm:text-3xl">
               {messages.app.title}
             </p>
-            <p className="mt-1 hidden text-[0.65rem] font-semibold uppercase text-[var(--ink-muted)] sm:block">
+            <p className="mt-1 hidden text-[0.65rem] font-semibold uppercase text-(--ink-muted) sm:block">
               {messages.app.eyebrow}
             </p>
           </Link>
         </header>
 
         <div className="flex flex-1 items-center justify-center py-10 sm:py-14">
-          <section className="w-full max-w-md rounded-md border border-[var(--line)] bg-[var(--paper)] p-5 shadow-[0_24px_70px_rgba(48,37,26,0.09)] sm:p-8">
+          <section className="w-full max-w-md rounded-md border border-(--line) bg-(--paper) p-5 shadow-[0_24px_70px_rgba(48,37,26,0.09)] sm:p-8">
             <h1 className="font-display text-4xl leading-tight font-medium">
               {title}
             </h1>
@@ -189,7 +189,7 @@ export function AuthForm({
               ) : null}
 
               <button
-                className="min-h-12 rounded-sm bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-55"
+                className="min-h-12 rounded-sm bg-(--accent) px-4 py-3 text-sm font-semibold text-white transition hover:bg-(--accent-strong) disabled:cursor-not-allowed disabled:opacity-55"
                 disabled={isSubmitting}
                 type="submit"
               >
@@ -199,7 +199,7 @@ export function AuthForm({
 
             <div className="mt-5 flex items-center justify-end text-sm">
               <Link
-                className="font-medium text-[var(--ink-muted)] underline-offset-4 hover:text-[var(--ink)] hover:underline"
+                className="font-medium text-(--ink-muted) underline-offset-4 hover:text-(--ink) hover:underline"
                 href={alternatePath}
               >
                 {alternateLabel}
@@ -225,10 +225,7 @@ function Field({
 }) {
   return (
     <div className="grid gap-1.5">
-      <label
-        className="text-sm font-medium text-[var(--ink)]"
-        htmlFor={htmlFor}
-      >
+      <label className="text-sm font-medium text-(--ink)" htmlFor={htmlFor}>
         {label}
       </label>
       {children}
@@ -249,4 +246,4 @@ function buildQuery(nextPath: string, draftToken?: string) {
 }
 
 const inputClassName =
-  "h-12 w-full rounded-sm border border-[var(--line-strong)] bg-white px-3 text-sm text-[var(--ink)] outline-none transition placeholder:text-[var(--ink-faint)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] disabled:opacity-60";
+  "h-12 w-full rounded-sm border border-(--line-strong) bg-white px-3 text-sm text-(--ink) outline-none transition placeholder:text-(--ink-faint) focus:border-(--accent) focus:ring-2 focus:ring-(--accent-soft) disabled:opacity-60";

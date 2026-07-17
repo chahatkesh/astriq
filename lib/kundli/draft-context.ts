@@ -34,30 +34,30 @@ export function decodeDraftContext(
 }
 
 function encodeBase64Url(input: string) {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(input, "utf8").toString("base64url");
+  if (typeof btoa === "function") {
+    const bytes = new TextEncoder().encode(input);
+    let binary = "";
+    for (const byte of bytes) {
+      binary += String.fromCharCode(byte);
+    }
+
+    return btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
   }
 
-  const bytes = new TextEncoder().encode(input);
-  let binary = "";
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
+  return Buffer.from(input, "utf8").toString("base64url");
 }
 
 function decodeBase64Url(input: string) {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(input, "base64url").toString("utf8");
+  if (typeof atob === "function") {
+    const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
   }
 
-  const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
-  const binary = atob(padded);
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+  return Buffer.from(input, "base64url").toString("utf8");
 }
