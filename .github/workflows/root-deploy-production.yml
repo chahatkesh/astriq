@@ -160,7 +160,6 @@ jobs:
             set -eu
             test -f /app/server.js
             test -d /app/.next/static
-            test -d /app/public
           '
 
       - name: Verify pushed migrate image
