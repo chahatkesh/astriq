@@ -1,6 +1,6 @@
 "use client";
 
-import { LocateFixed, LogOut } from "lucide-react";
+import { ChevronDown, LocateFixed, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -9,6 +9,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { KundliChart } from "@/components/kundli/KundliChart";
 import { usePlaceSearch } from "@/hooks/use-place-search";
 import { getDefaultPostAuthPath } from "@/lib/auth/redirect";
@@ -20,7 +21,6 @@ import {
 import {
   defaultLocale,
   getSupportedLocale,
-  supportedLocales,
   type LocaleCode,
 } from "@/lib/i18n/locales";
 import {
@@ -82,7 +82,7 @@ export function BirthChartWorkspace({
   initialQuota,
 }: BirthChartWorkspaceProps) {
   const router = useRouter();
-  const [localeCode, setLocaleCode] = useState<LocaleCode>(initialLocale);
+  const localeCode = initialLocale;
   const [form, setForm] = useState<FormState>(() =>
     buildInitialForm(initialDraftToken),
   );
@@ -106,10 +106,25 @@ export function BirthChartWorkspace({
   const [selectedPlace, setSelectedPlace] = useState<PlaceCandidate | null>(
     null,
   );
+  const [manualAdvancedOpen, setManualAdvancedOpen] = useState(() =>
+    shouldOpenAdvancedFromDraft(initialDraftToken),
+  );
   const placeSearch = usePlaceSearch(placeQuery);
   const locale = getSupportedLocale(localeCode);
   const messages = AppStrings.forLocale(localeCode);
   const isLocationLocked = selectedPlace !== null;
+  const placeCandidates = placeSearch.results?.candidates ?? [];
+  const showPlaceNoResults =
+    !selectedPlace &&
+    !placeSearch.isSearching &&
+    placeQuery.trim().length >= 2 &&
+    !placeSearch.error &&
+    placeCandidates.length === 0;
+  const autoOpenAdvanced =
+    hasAdvancedFieldErrors(fieldErrors) ||
+    showPlaceNoResults ||
+    Boolean(placeSearch.error);
+  const showAdvancedLocation = manualAdvancedOpen || autoOpenAdvanced;
 
   const hasQuota = !authenticated || !quota || quota.remaining > 0;
 
@@ -131,17 +146,6 @@ export function BirthChartWorkspace({
       getDashboardPath(localeCode, chartId ? { chart: chartId } : {}),
       { scroll: false },
     );
-  }
-
-  function changeLocale(nextLocale: LocaleCode) {
-    setLocaleCode(nextLocale);
-    const target = authenticated
-      ? getDashboardPath(
-          nextLocale,
-          activeChartId ? { chart: activeChartId } : {},
-        )
-      : `/${nextLocale}`;
-    router.push(target);
   }
 
   function selectPlace(candidate: PlaceCandidate) {
@@ -341,24 +345,18 @@ export function BirthChartWorkspace({
             ) : null}
           </div>
 
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="sr-only" htmlFor="locale">
-              {messages.app.language}
-            </label>
-            <select
-              className="h-10 min-w-44 rounded-sm border border-(--line-strong) bg-(--paper) px-3 text-sm text-(--ink) outline-none transition focus:border-(--accent) focus:ring-2 focus:ring-(--accent-soft)"
-              id="locale"
-              onChange={(event) =>
-                changeLocale(event.target.value as LocaleCode)
+          <div className="flex flex-wrap items-center gap-3">
+            <LocaleSwitcher
+              getHref={(nextLocale) =>
+                authenticated
+                  ? getDashboardPath(
+                      nextLocale,
+                      activeChartId ? { chart: activeChartId } : {},
+                    )
+                  : `/${nextLocale}`
               }
-              value={localeCode}
-            >
-              {supportedLocales.map((item) => (
-                <option key={item.code} value={item.code}>
-                  {item.nativeName} / {item.englishName}
-                </option>
-              ))}
-            </select>
+              locale={localeCode}
+            />
 
             {authenticated ? (
               <div className="flex h-10 items-center gap-3">
@@ -479,98 +477,129 @@ export function BirthChartWorkspace({
                   : messages.form.currentPosition}
               </button>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <Field
-                  error={fieldErrors.latitude}
-                  id="latitude"
-                  label={messages.form.latitude}
-                >
-                  <input
-                    className={inputClassName}
-                    disabled={isLocationLocked}
-                    id="latitude"
-                    inputMode="decimal"
-                    max="90"
-                    min="-90"
-                    name="latitude"
-                    onChange={(event) =>
-                      setForm({ ...form, latitude: event.target.value })
+              <div className="grid gap-3">
+                <button
+                  aria-controls="advanced-location-fields"
+                  aria-expanded={showAdvancedLocation}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-(--ink-muted) transition hover:text-(--ink)"
+                  onClick={() => {
+                    if (autoOpenAdvanced) {
+                      return;
                     }
-                    required
-                    step="0.000001"
-                    type="number"
-                    value={form.latitude}
-                  />
-                </Field>
 
-                <Field
-                  error={fieldErrors.longitude}
-                  id="longitude"
-                  label={messages.form.longitude}
+                    setManualAdvancedOpen((value) => !value);
+                  }}
+                  type="button"
                 >
-                  <input
-                    className={inputClassName}
-                    disabled={isLocationLocked}
-                    id="longitude"
-                    inputMode="decimal"
-                    max="180"
-                    min="-180"
-                    name="longitude"
-                    onChange={(event) =>
-                      setForm({ ...form, longitude: event.target.value })
-                    }
-                    required
-                    step="0.000001"
-                    type="number"
-                    value={form.longitude}
+                  {showAdvancedLocation
+                    ? messages.form.hideAdvancedLocation
+                    : messages.form.advancedLocation}
+                  <ChevronDown
+                    aria-hidden="true"
+                    className={`size-4 transition-transform duration-200 ${showAdvancedLocation ? "rotate-180" : ""}`}
                   />
-                </Field>
+                </button>
+
+                {showAdvancedLocation ? (
+                  <div
+                    className="grid gap-3 border-s-2 border-(--line) ps-3"
+                    id="advanced-location-fields"
+                  >
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                      <Field
+                        error={fieldErrors.latitude}
+                        id="latitude"
+                        label={messages.form.latitude}
+                      >
+                        <input
+                          className={inputClassName}
+                          disabled={isLocationLocked}
+                          id="latitude"
+                          inputMode="decimal"
+                          max="90"
+                          min="-90"
+                          name="latitude"
+                          onChange={(event) =>
+                            setForm({ ...form, latitude: event.target.value })
+                          }
+                          required
+                          step="0.000001"
+                          type="number"
+                          value={form.latitude}
+                        />
+                      </Field>
+
+                      <Field
+                        error={fieldErrors.longitude}
+                        id="longitude"
+                        label={messages.form.longitude}
+                      >
+                        <input
+                          className={inputClassName}
+                          disabled={isLocationLocked}
+                          id="longitude"
+                          inputMode="decimal"
+                          max="180"
+                          min="-180"
+                          name="longitude"
+                          onChange={(event) =>
+                            setForm({ ...form, longitude: event.target.value })
+                          }
+                          required
+                          step="0.000001"
+                          type="number"
+                          value={form.longitude}
+                        />
+                      </Field>
+                    </div>
+
+                    <Field
+                      error={fieldErrors.timeZone}
+                      id="timeZone"
+                      label={messages.form.timeZone}
+                    >
+                      <input
+                        className={inputClassName}
+                        disabled={isLocationLocked}
+                        id="timeZone"
+                        list="time-zone-options"
+                        name="timeZone"
+                        onChange={(event) =>
+                          setForm({ ...form, timeZone: event.target.value })
+                        }
+                        required
+                        value={form.timeZone}
+                      />
+                      <datalist id="time-zone-options">
+                        {timeZones.map((timeZone) => (
+                          <option key={timeZone} value={timeZone} />
+                        ))}
+                      </datalist>
+                    </Field>
+
+                    <Field
+                      error={fieldErrors.timezoneOffsetMinutes}
+                      id="timezoneOffsetMinutes"
+                      label={messages.form.offsetMinutes}
+                    >
+                      <input
+                        className={inputClassName}
+                        id="timezoneOffsetMinutes"
+                        name="timezoneOffsetMinutes"
+                        onChange={(event) =>
+                          setForm({
+                            ...form,
+                            timezoneOffsetMinutes: event.target.value,
+                          })
+                        }
+                        placeholder={messages.account.offsetPlaceholder}
+                        type="number"
+                        value={form.timezoneOffsetMinutes}
+                      />
+                    </Field>
+                  </div>
+                ) : null}
               </div>
-
-              <Field
-                error={fieldErrors.timeZone}
-                id="timeZone"
-                label={messages.form.timeZone}
-              >
-                <input
-                  className={inputClassName}
-                  disabled={isLocationLocked}
-                  id="timeZone"
-                  list="time-zone-options"
-                  name="timeZone"
-                  onChange={(event) =>
-                    setForm({ ...form, timeZone: event.target.value })
-                  }
-                  required
-                  value={form.timeZone}
-                />
-                <datalist id="time-zone-options">
-                  {timeZones.map((timeZone) => (
-                    <option key={timeZone} value={timeZone} />
-                  ))}
-                </datalist>
-              </Field>
-
-              <Field
-                error={fieldErrors.timezoneOffsetMinutes}
-                id="timezoneOffsetMinutes"
-                label={messages.form.offsetMinutes}
-              >
-                <input
-                  className={inputClassName}
-                  id="timezoneOffsetMinutes"
-                  name="timezoneOffsetMinutes"
-                  onChange={(event) =>
-                    setForm({
-                      ...form,
-                      timezoneOffsetMinutes: event.target.value,
-                    })
-                  }
-                  placeholder={messages.account.offsetPlaceholder}
-                  type="number"
-                  value={form.timezoneOffsetMinutes}
-                />
-              </Field>
 
               {formError ? (
                 <p
@@ -648,6 +677,22 @@ function buildInitialForm(draftToken?: string) {
     timezoneOffsetMinutes:
       draft.timezoneOffsetMinutes ?? defaultForm.timezoneOffsetMinutes,
   } satisfies FormState;
+}
+
+function shouldOpenAdvancedFromDraft(draftToken?: string) {
+  const draft = buildInitialForm(draftToken);
+  return draft.latitude.trim().length > 0 && draft.longitude.trim().length > 0;
+}
+
+function hasAdvancedFieldErrors(fieldErrors: Record<string, string>) {
+  const advancedFields = [
+    "latitude",
+    "longitude",
+    "timeZone",
+    "timezoneOffsetMinutes",
+  ] as const;
+
+  return advancedFields.some((field) => field in fieldErrors);
 }
 
 function PlaceSearchField({

@@ -4,6 +4,8 @@ export const englishAppStrings = {
     title: "Astriq",
     subtitle: "Lahiri / sidereal / whole sign",
     language: "Language",
+    searchLanguage: "Search languages",
+    noMatchingLanguages: "No matching languages",
   },
   landing: {
     signIn: "Sign in",
@@ -67,6 +69,8 @@ export const englishAppStrings = {
     timeZone: "IANA time zone",
     manualOffset: "Manual UTC offset",
     offsetMinutes: "Offset minutes",
+    advancedLocation: "Advanced location",
+    hideAdvancedLocation: "Hide advanced location",
     submit: "Generate kundli",
     submitting: "Calculating",
   },

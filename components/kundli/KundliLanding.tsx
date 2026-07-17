@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, Clock3, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { usePlaceSearch } from "@/hooks/use-place-search";
 import { getDefaultPostAuthPath } from "@/lib/auth/redirect";
 import { AppStrings } from "@/lib/i18n/app-strings";
@@ -27,6 +28,8 @@ export function KundliLanding({ locale }: KundliLandingProps) {
   );
   const placeSearch = usePlaceSearch(placeQuery);
   const placeCandidates = placeSearch.results?.candidates ?? [];
+  const isFormReady =
+    birthDate.length > 0 && birthTime.length > 0 && selectedPlace !== null;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,11 +70,12 @@ export function KundliLanding({ locale }: KundliLandingProps) {
             </p>
           </Link>
           <nav
-            className="flex shrink-0 items-center gap-1 text-sm sm:gap-2"
+            className="flex shrink-0 items-center gap-2 text-sm sm:gap-3"
             aria-label="Account"
           >
+            <LocaleSwitcher locale={locale} />
             <Link
-              className="px-3 py-2 font-medium text-(--ink-muted) transition hover:text-(--ink) sm:px-4"
+              className="px-2.5 py-2 font-medium text-(--ink-muted) transition hover:text-(--ink) sm:px-4"
               href={`/${locale}/login`}
             >
               {messages.landing.signIn}
@@ -207,7 +211,8 @@ export function KundliLanding({ locale }: KundliLandingProps) {
                 </Field>
 
                 <button
-                  className="group flex min-h-12 items-center justify-center gap-2 rounded-sm bg-(--accent) px-4 py-3 text-sm font-semibold text-white transition hover:bg-(--accent-strong) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent) sm:col-span-2"
+                  className="group flex min-h-12 items-center justify-center gap-2 rounded-sm bg-(--accent) px-4 py-3 text-sm font-semibold text-white transition hover:bg-(--accent-strong) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent) disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:bg-(--accent) sm:col-span-2"
+                  disabled={!isFormReady}
                   type="submit"
                 >
                   {messages.landing.generate}

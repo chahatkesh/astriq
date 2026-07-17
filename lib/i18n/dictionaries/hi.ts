@@ -6,6 +6,8 @@ export const hindiAppStrings: AppStringsOverrides = {
     title: "Astriq",
     subtitle: "लाहिड़ी / निरयन / पूर्ण राशि",
     language: "भाषा",
+    searchLanguage: "भाषा खोजें",
+    noMatchingLanguages: "कोई भाषा नहीं मिली",
   },
   landing: {
     signIn: "साइन इन",
@@ -68,6 +70,8 @@ export const hindiAppStrings: AppStringsOverrides = {
     timeZone: "IANA समय क्षेत्र",
     manualOffset: "मैनुअल UTC अंतर",
     offsetMinutes: "अंतर मिनटों में",
+    advancedLocation: "उन्नत स्थान",
+    hideAdvancedLocation: "उन्नत स्थान छिपाएँ",
     submit: "कुंडली बनाएँ",
     submitting: "गणना हो रही है",
   },

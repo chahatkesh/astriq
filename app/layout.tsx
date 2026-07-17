@@ -15,6 +15,8 @@ import {
   Noto_Sans_Tamil,
   Noto_Sans_Telugu,
 } from "next/font/google";
+import { appConfig } from "@/lib/app-config";
+import { publicEnv } from "@/lib/env";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -110,9 +112,28 @@ const notoSansMeeteiMayek = Noto_Sans_Meetei_Mayek({
   preload: false,
 });
 
+const siteDescription =
+  "Generate and manage Vedic birth charts (kundli) with precise Lahiri sidereal calculations.";
+
 export const metadata: Metadata = {
-  title: "Astriq",
-  description: "Astriq helps users generate and manage birth charts.",
+  title: {
+    default: publicEnv.appName,
+    template: `%s | ${publicEnv.appName}`,
+  },
+  description: siteDescription,
+  metadataBase: new URL(publicEnv.appUrl),
+  applicationName: appConfig.name,
+  openGraph: {
+    title: publicEnv.appName,
+    description: siteDescription,
+    siteName: publicEnv.appName,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: publicEnv.appName,
+    description: siteDescription,
+  },
 };
 
 const fontVariables = [
