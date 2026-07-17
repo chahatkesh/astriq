@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f0e8;
+  --foreground: #25221f;
+  --paper: #fffdf8;
+  --ink: #25221f;
+  --ink-muted: #6f6961;
+  --ink-faint: #928b81;
+  --line: #dcd4c8;
+  --line-strong: #c9bfb1;
+  --accent: #c84f38;
+  --accent-strong: #a83b29;
+  --accent-soft: rgba(200, 79, 56, 0.14);
 }
 
 @theme inline {
@@ -12,29 +21,62 @@
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
 }
 
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+a,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-display {
+  font-family:
+    Iowan Old Style,
+    Baskerville,
+    "Times New Roman",
+    serif;
+  letter-spacing: 0;
+}
+
+.app-surface {
+  background-color: var(--background);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 253, 248, 0.72),
+    rgba(244, 240, 232, 0.35) 48%,
+    rgba(224, 232, 224, 0.42)
+  );
+}
+
+.app-grid {
+  background-image:
+    linear-gradient(rgba(37, 34, 31, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 34, 31, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
 .kundli-paper {
   max-width: 794px;
   min-height: min(1123px, calc(100vw * 1.414));
-  border: 1px solid #9f8765;
-  background-color: #fbf6e9;
+  border: 1px solid #c6b49c;
+  border-radius: 2px;
+  background-color: #fffaf0;
   background-image:
     linear-gradient(rgba(111, 80, 43, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(111, 80, 43, 0.018) 1px, transparent 1px);
   background-size: 24px 24px;
-  box-shadow: 0 18px 48px rgba(35, 25, 15, 0.16);
+  box-shadow: 0 22px 60px rgba(48, 37, 26, 0.12);
   color: #2d2318;
 }
 

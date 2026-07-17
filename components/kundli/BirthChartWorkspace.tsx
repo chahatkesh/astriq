@@ -1,5 +1,6 @@
 "use client";
 
+import { LocateFixed, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -321,21 +322,18 @@ export function BirthChartWorkspace({
 
   return (
     <main
-      className="min-h-screen bg-background text-foreground"
+      className="app-surface min-h-screen text-[var(--ink)]"
       dir={locale.direction}
       lang={locale.code}
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-foreground/15 pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
-              {messages.app.eyebrow}
-            </p>
-            <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+        <header className="flex flex-col gap-4 border-b border-[var(--line)] pb-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="font-display text-3xl leading-none font-semibold sm:text-4xl">
               {messages.app.title}
             </h1>
             {authenticated && userDisplayName ? (
-              <p className="mt-2 text-sm text-foreground/65">
+              <p className="mt-2 truncate text-sm text-[var(--ink-muted)]">
                 {formatAppString(messages.account.welcome, {
                   name: userDisplayName,
                 })}
@@ -343,15 +341,12 @@ export function BirthChartWorkspace({
             ) : null}
           </div>
 
-          <div className="grid gap-2 sm:min-w-60">
-            <label
-              className="text-xs uppercase text-foreground/45"
-              htmlFor="locale"
-            >
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="sr-only" htmlFor="locale">
               {messages.app.language}
             </label>
             <select
-              className={inputClassName}
+              className="h-10 min-w-44 rounded-sm border border-[var(--line-strong)] bg-[var(--paper)] px-3 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
               id="locale"
               onChange={(event) =>
                 changeLocale(event.target.value as LocaleCode)
@@ -366,17 +361,18 @@ export function BirthChartWorkspace({
             </select>
 
             {authenticated ? (
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-mono text-xs text-foreground/60">
+              <div className="flex h-10 items-center gap-3">
+                <p className="text-xs text-[var(--ink-muted)]">
                   {formatAppString(messages.account.remainingCharts, {
                     count: quota?.remaining ?? "-",
                   })}
                 </p>
                 <button
-                  className="border border-foreground/20 px-2 py-1 text-xs font-medium transition hover:bg-foreground hover:text-background"
+                  className="inline-flex h-10 items-center gap-2 rounded-sm border border-[var(--line-strong)] bg-[var(--paper)] px-3 text-xs font-semibold transition hover:border-[var(--ink)] hover:bg-[var(--ink)] hover:text-white"
                   onClick={handleLogout}
                   type="button"
                 >
+                  <LogOut aria-hidden="true" className="size-3.5" />
                   {messages.account.logout}
                 </button>
               </div>
@@ -384,12 +380,14 @@ export function BirthChartWorkspace({
           </div>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(20rem,24rem)_minmax(0,1fr)]">
-          <section className="border border-foreground/15 bg-background">
-            <div className="border-b border-foreground/15 px-4 py-3">
-              <h2 className="text-base font-semibold">{messages.form.title}</h2>
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(20rem,23rem)_minmax(0,1fr)]">
+          <section className="overflow-hidden rounded-md border border-[var(--line)] bg-[var(--paper)] shadow-[0_18px_50px_rgba(48,37,26,0.07)]">
+            <div className="border-b border-[var(--line)] px-5 py-4">
+              <h2 className="font-display text-xl font-semibold">
+                {messages.form.title}
+              </h2>
               {authenticated && quota ? (
-                <p className="mt-1 text-xs text-foreground/60">
+                <p className="mt-1 text-xs text-[var(--ink-muted)]">
                   {formatAppString(messages.account.chartsUsed, {
                     used: quota.used,
                     limit: quota.limit,
@@ -398,7 +396,7 @@ export function BirthChartWorkspace({
               ) : null}
             </div>
 
-            <form className="grid gap-4 p-4" onSubmit={handleSubmit}>
+            <form className="grid gap-4 p-5" onSubmit={handleSubmit}>
               <Field
                 error={fieldErrors.subjectName}
                 id="subjectName"
@@ -470,11 +468,12 @@ export function BirthChartWorkspace({
               />
 
               <button
-                className="border border-foreground/20 px-3 py-2 text-sm font-medium transition hover:bg-foreground hover:text-background disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-[var(--line-strong)] px-3 py-2 text-sm font-medium text-[var(--ink-muted)] transition hover:border-[var(--ink)] hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isLocating}
                 onClick={useCurrentPosition}
                 type="button"
               >
+                <LocateFixed aria-hidden="true" className="size-4" />
                 {isLocating
                   ? messages.form.readingPosition
                   : messages.form.currentPosition}
@@ -576,20 +575,20 @@ export function BirthChartWorkspace({
               {formError ? (
                 <p
                   aria-live="polite"
-                  className="border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-200"
+                  className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
                 >
                   {formError}
                 </p>
               ) : null}
 
               {authenticated && !hasQuota ? (
-                <p className="border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-100">
+                <p className="rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                   {messages.account.quotaExhausted}
                 </p>
               ) : null}
 
               <button
-                className="bg-foreground px-4 py-3 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
+                className="min-h-12 rounded-sm bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-55"
                 disabled={isSubmitting || !hasQuota}
                 type="submit"
               >
@@ -600,7 +599,7 @@ export function BirthChartWorkspace({
 
           <section aria-live="polite" className="min-w-0">
             {showChartNotFound ? (
-              <p className="mb-4 border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-100">
+              <p className="mb-4 rounded-sm border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                 {messages.states.chartNotFound}
               </p>
             ) : null}
@@ -686,18 +685,18 @@ function PlaceSearchField({
       </label>
 
       {selectedPlace ? (
-        <div className="flex items-center justify-between gap-2 border border-foreground/20 bg-foreground/3 px-3 py-2 text-sm">
+        <div className="flex items-center justify-between gap-2 rounded-sm border border-[var(--line)] bg-[var(--background)] px-3 py-2 text-sm">
           <span>
-            <span className="block text-xs text-foreground/55">
+            <span className="block text-xs text-[var(--ink-muted)]">
               {messages.placeSearch.resolved}
             </span>
             <span className="font-medium">{selectedPlace.label}</span>
-            <span className="block font-mono text-xs text-foreground/55">
+            <span className="block font-mono text-xs text-[var(--ink-muted)]">
               {selectedPlace.timeZone}
             </span>
           </span>
           <button
-            className="border border-foreground/20 px-2 py-1 text-xs font-medium transition hover:bg-foreground hover:text-background"
+            className="rounded-sm border border-[var(--line-strong)] px-2 py-1 text-xs font-medium transition hover:border-[var(--ink)] hover:bg-[var(--ink)] hover:text-white"
             onClick={onClear}
             type="button"
           >
@@ -718,32 +717,32 @@ function PlaceSearchField({
             type="text"
             value={query}
           />
-          <p className="text-xs text-foreground/55">
+          <p className="text-xs text-[var(--ink-muted)]">
             {messages.placeSearch.hint}
           </p>
 
           {search.isSearching ? (
-            <p className="text-xs text-foreground/55">
+            <p className="text-xs text-[var(--ink-muted)]">
               {messages.placeSearch.searching}
             </p>
           ) : null}
 
           {showAmbiguous ? (
-            <p className="text-xs text-amber-700 dark:text-amber-200">
+            <p className="text-xs text-amber-700">
               {messages.placeSearch.ambiguous}
             </p>
           ) : null}
 
           {candidates.length > 0 ? (
             <ul
-              className="grid divide-y divide-foreground/10 border border-foreground/20"
+              className="grid divide-y divide-[var(--line)] overflow-hidden rounded-sm border border-[var(--line)] bg-white"
               id={listId}
               role="listbox"
             >
               {candidates.map((candidate) => (
                 <li key={candidate.id} aria-selected={false} role="option">
                   <button
-                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition hover:bg-foreground hover:text-background"
+                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition hover:bg-[var(--ink)] hover:text-white"
                     onClick={() => onSelect(candidate)}
                     type="button"
                   >
@@ -758,22 +757,18 @@ function PlaceSearchField({
           ) : null}
 
           {showNoResults ? (
-            <p className="text-xs text-foreground/55">
+            <p className="text-xs text-[var(--ink-muted)]">
               {messages.placeSearch.noResults}
             </p>
           ) : null}
 
           {search.error ? (
-            <p className="text-xs text-red-700 dark:text-red-200">
-              {messages.placeSearch.error}
-            </p>
+            <p className="text-xs text-red-700">{messages.placeSearch.error}</p>
           ) : null}
         </>
       )}
 
-      {error ? (
-        <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
     </div>
   );
 }
@@ -798,7 +793,7 @@ function Field({
       </label>
       {children}
       {error ? (
-        <p className="text-sm text-red-700 dark:text-red-200" id={errorId}>
+        <p className="text-sm text-red-700" id={errorId}>
           {error}
         </p>
       ) : null}
@@ -808,9 +803,9 @@ function Field({
 
 function LoadingState({ messages }: { messages: AppStringsDictionary }) {
   return (
-    <div className="grid min-h-96 place-items-center border border-foreground/15">
+    <div className="grid min-h-96 place-items-center rounded-md border border-[var(--line)] bg-[var(--paper)]">
       <div className="text-center">
-        <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/45">
+        <p className="text-xs font-semibold uppercase text-[var(--ink-muted)]">
           {messages.states.loadingEyebrow}
         </p>
         <p className="mt-2 text-lg font-semibold">
@@ -823,9 +818,9 @@ function LoadingState({ messages }: { messages: AppStringsDictionary }) {
 
 function EmptyState({ messages }: { messages: AppStringsDictionary }) {
   return (
-    <div className="grid min-h-96 place-items-center border border-dashed border-foreground/20 px-6 text-center">
+    <div className="grid min-h-96 place-items-center rounded-md border border-dashed border-[var(--line-strong)] bg-[rgba(255,253,248,0.55)] px-6 text-center">
       <div>
-        <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/45">
+        <p className="text-xs font-semibold uppercase text-[var(--ink-muted)]">
           {messages.states.emptyEyebrow}
         </p>
         <p className="mt-2 text-lg font-semibold">
@@ -846,31 +841,33 @@ function ChartHistoryPanel({
   onSelectChart: (item: UserChartSummary) => void;
 }) {
   return (
-    <section className="mt-6 border border-foreground/15 bg-background">
-      <div className="border-b border-foreground/15 px-4 py-3">
-        <h2 className="text-base font-semibold">{messages.history.title}</h2>
+    <section className="mt-5 overflow-hidden rounded-md border border-[var(--line)] bg-[var(--paper)]">
+      <div className="border-b border-[var(--line)] px-4 py-3">
+        <h2 className="font-display text-lg font-semibold">
+          {messages.history.title}
+        </h2>
       </div>
 
       {history.length === 0 ? (
-        <p className="px-4 py-6 text-sm text-foreground/60">
+        <p className="px-4 py-6 text-sm text-[var(--ink-muted)]">
           {messages.history.empty}
         </p>
       ) : (
-        <ul className="divide-y divide-foreground/10">
+        <ul className="divide-y divide-[var(--line)]">
           {history.map((item) => (
             <li key={item.id}>
               <button
-                className="grid w-full gap-1 px-4 py-3 text-left transition hover:bg-foreground/5"
+                className="grid w-full gap-1 px-4 py-3 text-left transition hover:bg-[var(--background)]"
                 onClick={() => onSelectChart(item)}
                 type="button"
               >
                 <span className="text-sm font-medium">
                   {item.subjectName || messages.history.unnamed}
                 </span>
-                <span className="text-xs text-foreground/60">
+                <span className="text-xs text-[var(--ink-muted)]">
                   {item.placeName} | {item.localDateTime}
                 </span>
-                <span className="font-mono text-xs text-foreground/45">
+                <span className="font-mono text-xs text-[var(--ink-faint)]">
                   {formatAppString(messages.history.savedAt, {
                     when: formatSavedAt(item.createdAt),
                   })}
@@ -898,4 +895,4 @@ function formatSavedAt(createdAt: string) {
 }
 
 const inputClassName =
-  "h-10 w-full border border-foreground/20 bg-background px-3 text-sm text-foreground outline-none transition focus:border-foreground disabled:opacity-60";
+  "h-11 w-full rounded-sm border border-[var(--line-strong)] bg-white px-3 text-sm text-[var(--ink)] outline-none transition placeholder:text-[var(--ink-faint)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] disabled:bg-[var(--background)] disabled:opacity-70";

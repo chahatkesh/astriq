@@ -81,16 +81,18 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
   }
 
   return (
-    <div className="grid min-w-0 gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="grid min-w-0 gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--line) pb-3">
         <div>
-          <h2 className="text-lg font-semibold">{messages.chart.kundli}</h2>
-          <p className="text-sm text-foreground/60">
+          <h2 className="font-display text-2xl font-semibold">
+            {messages.chart.kundli}
+          </h2>
+          <p className="text-sm text-(--ink-muted)">
             {chart.subjectName || messages.chart.unnamed}
           </p>
         </div>
         <button
-          className="inline-flex h-10 items-center gap-2 border border-foreground/20 bg-foreground px-3 text-sm font-semibold text-background transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-55"
+          className="inline-flex h-10 items-center gap-2 rounded-sm bg-(--ink) px-3 text-sm font-semibold text-white transition hover:bg-(--accent) disabled:cursor-not-allowed disabled:opacity-55"
           disabled={isExporting}
           onClick={handleDownload}
           type="button"
@@ -109,7 +111,7 @@ export function KundliChart({ chart, localeCode, messages }: KundliChartProps) {
       {exportError ? (
         <p
           aria-live="polite"
-          className="border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-200"
+          className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
         >
           {exportError}
         </p>

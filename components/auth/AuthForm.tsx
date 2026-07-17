@@ -39,10 +39,6 @@ export function AuthForm({
 
   const title =
     mode === "login" ? messages.auth.signInTitle : messages.auth.registerTitle;
-  const subtitle =
-    mode === "login"
-      ? messages.auth.signInSubtitle
-      : messages.auth.registerSubtitle;
   const submitText =
     mode === "login"
       ? messages.auth.submitSignIn
@@ -106,102 +102,111 @@ export function AuthForm({
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-8 sm:px-6">
-        <section className="w-full max-w-md border border-foreground/15 bg-background p-6 sm:p-8">
-          <p className="font-mono text-xs uppercase tracking-[0.16em] text-foreground/50">
-            {messages.auth.eyebrow}
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold">{title}</h1>
-          <p className="mt-2 text-sm text-foreground/65">{subtitle}</p>
+    <main className="app-surface relative isolate min-h-screen overflow-hidden text-[var(--ink)]">
+      <div
+        aria-hidden="true"
+        className="app-grid absolute inset-0 opacity-60"
+      />
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
+        <header className="py-5 sm:py-7">
+          <Link className="inline-block" href={`/${locale}`}>
+            <p className="font-display text-2xl leading-none font-semibold sm:text-3xl">
+              {messages.app.title}
+            </p>
+            <p className="mt-1 hidden text-[0.65rem] font-semibold uppercase text-[var(--ink-muted)] sm:block">
+              {messages.app.eyebrow}
+            </p>
+          </Link>
+        </header>
 
-          <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
-            {mode === "register" ? (
+        <div className="flex flex-1 items-center justify-center py-10 sm:py-14">
+          <section className="w-full max-w-md rounded-md border border-[var(--line)] bg-[var(--paper)] p-5 shadow-[0_24px_70px_rgba(48,37,26,0.09)] sm:p-8">
+            <h1 className="font-display text-4xl leading-tight font-medium">
+              {title}
+            </h1>
+
+            <form className="mt-7 grid gap-4" onSubmit={handleSubmit}>
+              {mode === "register" ? (
+                <Field
+                  error={fieldErrors.displayName}
+                  htmlFor="displayName"
+                  label={messages.auth.displayName}
+                >
+                  <input
+                    className={inputClassName}
+                    id="displayName"
+                    name="displayName"
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    placeholder={messages.auth.displayNamePlaceholder}
+                    type="text"
+                    value={displayName}
+                  />
+                </Field>
+              ) : null}
+
               <Field
-                error={fieldErrors.displayName}
-                htmlFor="displayName"
-                label={messages.auth.displayName}
+                error={fieldErrors.email}
+                htmlFor="email"
+                label={messages.auth.email}
               >
                 <input
+                  autoComplete="email"
                   className={inputClassName}
-                  id="displayName"
-                  name="displayName"
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  placeholder={messages.auth.displayNamePlaceholder}
-                  type="text"
-                  value={displayName}
+                  id="email"
+                  name="email"
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder={messages.auth.emailPlaceholder}
+                  required
+                  type="email"
+                  value={email}
                 />
               </Field>
-            ) : null}
 
-            <Field
-              error={fieldErrors.email}
-              htmlFor="email"
-              label={messages.auth.email}
-            >
-              <input
-                autoComplete="email"
-                className={inputClassName}
-                id="email"
-                name="email"
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder={messages.auth.emailPlaceholder}
-                required
-                type="email"
-                value={email}
-              />
-            </Field>
+              <Field
+                error={fieldErrors.password}
+                htmlFor="password"
+                label={messages.auth.password}
+              >
+                <input
+                  autoComplete={
+                    mode === "login" ? "current-password" : "new-password"
+                  }
+                  className={inputClassName}
+                  id="password"
+                  name="password"
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder={messages.auth.passwordPlaceholder}
+                  required
+                  type="password"
+                  value={password}
+                />
+              </Field>
 
-            <Field
-              error={fieldErrors.password}
-              htmlFor="password"
-              label={messages.auth.password}
-            >
-              <input
-                autoComplete={
-                  mode === "login" ? "current-password" : "new-password"
-                }
-                className={inputClassName}
-                id="password"
-                name="password"
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder={messages.auth.passwordPlaceholder}
-                required
-                type="password"
-                value={password}
-              />
-            </Field>
+              {formError ? (
+                <p className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {formError}
+                </p>
+              ) : null}
 
-            {formError ? (
-              <p className="border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-200">
-                {formError}
-              </p>
-            ) : null}
+              <button
+                className="min-h-12 rounded-sm bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-55"
+                disabled={isSubmitting}
+                type="submit"
+              >
+                {isSubmitting ? messages.auth.submitting : submitText}
+              </button>
+            </form>
 
-            <button
-              className="bg-foreground px-4 py-3 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
-              disabled={isSubmitting}
-              type="submit"
-            >
-              {isSubmitting ? messages.auth.submitting : submitText}
-            </button>
-          </form>
-
-          <div className="mt-4 flex items-center justify-between gap-3 text-sm">
-            <Link
-              className="text-foreground/75 underline-offset-4 hover:underline"
-              href={`/${locale}`}
-            >
-              {messages.auth.backToLanding}
-            </Link>
-            <Link
-              className="text-foreground/75 underline-offset-4 hover:underline"
-              href={alternatePath}
-            >
-              {alternateLabel}
-            </Link>
-          </div>
-        </section>
+            <div className="mt-5 flex items-center justify-end text-sm">
+              <Link
+                className="font-medium text-[var(--ink-muted)] underline-offset-4 hover:text-[var(--ink)] hover:underline"
+                href={alternatePath}
+              >
+                {alternateLabel}
+              </Link>
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   );
@@ -220,13 +225,14 @@ function Field({
 }) {
   return (
     <div className="grid gap-1.5">
-      <label className="text-sm font-medium" htmlFor={htmlFor}>
+      <label
+        className="text-sm font-medium text-[var(--ink)]"
+        htmlFor={htmlFor}
+      >
         {label}
       </label>
       {children}
-      {error ? (
-        <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-red-700">{error}</p> : null}
     </div>
   );
 }
@@ -243,4 +249,4 @@ function buildQuery(nextPath: string, draftToken?: string) {
 }
 
 const inputClassName =
-  "h-10 w-full border border-foreground/20 bg-background px-3 text-sm text-foreground outline-none transition focus:border-foreground disabled:opacity-60";
+  "h-12 w-full rounded-sm border border-[var(--line-strong)] bg-white px-3 text-sm text-[var(--ink)] outline-none transition placeholder:text-[var(--ink-faint)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] disabled:opacity-60";

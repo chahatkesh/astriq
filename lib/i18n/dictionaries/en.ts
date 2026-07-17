@@ -9,7 +9,7 @@ export const englishAppStrings = {
     signIn: "Sign in",
     createAccount: "Create account",
     workspaceEyebrow: "Kundli workspace",
-    headline: "Enter birth details and continue after sign in.",
+    headline: "Enter details to generate your Kundli",
     description:
       "Your birth details stay saved while you sign in; then generate and revisit kundlis from your dashboard.",
     startTitle: "Start your chart",
