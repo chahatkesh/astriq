@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   Geist,
   Geist_Mono,
+  Instrument_Serif,
   Noto_Sans_Arabic,
   Noto_Sans_Bengali,
   Noto_Sans_Devanagari,
@@ -17,6 +18,7 @@ import {
 } from "next/font/google";
 import { appConfig } from "@/lib/app-config";
 import { publicEnv } from "@/lib/env";
+import { defaultLocale, localeCodes } from "@/lib/i18n/locales";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,6 +29,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
@@ -115,6 +123,12 @@ const notoSansMeeteiMayek = Noto_Sans_Meetei_Mayek({
 const siteDescription =
   "Generate and manage Vedic birth charts (kundli) with precise Lahiri sidereal calculations.";
 
+const ogImagePath = "/opengraph-image.png";
+
+const languageAlternates = Object.fromEntries(
+  localeCodes.map((locale) => [locale, `/${locale}`]),
+);
+
 export const metadata: Metadata = {
   title: {
     default: publicEnv.appName,
@@ -123,22 +137,57 @@ export const metadata: Metadata = {
   description: siteDescription,
   metadataBase: new URL(publicEnv.appUrl),
   applicationName: appConfig.name,
+  alternates: {
+    canonical: `/${defaultLocale}`,
+    languages: languageAlternates,
+  },
+  keywords: [
+    "vedic astrology",
+    "kundli",
+    "birth chart",
+    "janam kundli",
+    "lahiri ayanamsha",
+    "sidereal astrology",
+    "astrology chart generator",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     title: publicEnv.appName,
     description: siteDescription,
     siteName: publicEnv.appName,
+    url: `/${defaultLocale}`,
     type: "website",
+    images: [
+      {
+        url: ogImagePath,
+        width: 1200,
+        height: 630,
+        alt: `${publicEnv.appName} minimal brand image`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: publicEnv.appName,
     description: siteDescription,
+    images: [ogImagePath],
   },
 };
 
 const fontVariables = [
   geistSans.variable,
   geistMono.variable,
+  instrumentSerif.variable,
   notoSansDevanagari.variable,
   notoSansBengali.variable,
   notoSansGujarati.variable,

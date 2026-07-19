@@ -8,7 +8,7 @@ import { defaultLocale, isSupportedLocale } from "@/lib/i18n/locales";
  * locale so every page has a stable, shareable localized URL. API routes,
  * Next.js internals and static assets are excluded via the matcher below.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const firstSegment = pathname.split("/")[1] ?? "";
 

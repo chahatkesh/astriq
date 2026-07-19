@@ -8,92 +8,130 @@ export const size = {
 };
 export const contentType = "image/png";
 
+const starPositions = [
+  { top: "12%", left: "15%", size: 4 },
+  { top: "18%", left: "74%", size: 3 },
+  { top: "28%", left: "58%", size: 4 },
+  { top: "36%", left: "10%", size: 3 },
+  { top: "48%", left: "86%", size: 3 },
+  { top: "62%", left: "20%", size: 4 },
+  { top: "74%", left: "67%", size: 3 },
+  { top: "82%", left: "38%", size: 4 },
+];
+
 export default function OpenGraphImage() {
   return new ImageResponse(
     <div
       style={{
         background:
-          "linear-gradient(135deg, rgba(255,253,248,0.95) 0%, #f4f0e8 48%, rgba(224,232,224,0.85) 100%)",
-        backgroundImage:
-          "linear-gradient(rgba(37,34,31,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(37,34,31,0.04) 1px, transparent 1px)",
-        backgroundSize: "48px 48px",
+          "radial-gradient(circle at 52% 18%, #3a2468 0%, #1b1234 46%, #0a0816 100%)",
         width: "100%",
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
-        padding: "72px 80px",
-        color: "#25221f",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        position: "relative",
+        overflow: "hidden",
+        padding: "56px 70px",
+        color: "#f6efe0",
       }}
     >
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-          maxWidth: "760px",
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse 58% 46% at 50% 95%, rgba(217,164,65,0.14), transparent 72%)",
         }}
-      >
+      />
+
+      {starPositions.map((star, index) => (
         <div
+          key={index}
           style={{
-            color: "#c84f38",
-            fontSize: 22,
-            fontWeight: 700,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
+            position: "absolute",
+            top: star.top,
+            left: star.left,
+            width: star.size,
+            height: star.size,
+            borderRadius: 99,
+            backgroundColor: "rgba(253,246,227,0.9)",
+            boxShadow: "0 0 8px rgba(253,246,227,0.5)",
           }}
-        >
-          Vedic birth chart
-        </div>
-        <div
-          style={{
-            fontFamily: 'Georgia, "Iowan Old Style", Baskerville, serif',
-            fontSize: 96,
-            fontWeight: 600,
-            lineHeight: 0.95,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {appConfig.name}
-        </div>
-        <div
-          style={{
-            fontSize: 34,
-            lineHeight: 1.35,
-            color: "#6f6961",
-            maxWidth: "680px",
-          }}
-        >
-          Generate and save precise kundli charts with Lahiri sidereal
-          calculations.
-        </div>
-      </div>
+        />
+      ))}
 
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "flex-start",
+          gap: "24px",
+          marginTop: 86,
           width: "100%",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <div
           style={{
-            height: 4,
-            width: 120,
-            background: "#c84f38",
-            borderRadius: 2,
-          }}
-        />
-        <div
-          style={{
-            fontSize: 22,
-            color: "#928b81",
-            letterSpacing: "0.08em",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 24,
+            color: "#e8c375",
+            fontWeight: 700,
+            fontSize: 18,
+            letterSpacing: "0.22em",
             textTransform: "uppercase",
           }}
         >
-          Lahiri / sidereal / whole sign
+          <span
+            style={{
+              width: 64,
+              height: 2,
+              backgroundColor: "rgba(232,195,117,0.65)",
+            }}
+          />
+          <span>Vedic Birth Chart</span>
+          <span
+            style={{
+              width: 64,
+              height: 2,
+              backgroundColor: "rgba(232,195,117,0.65)",
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 108,
+            fontWeight: 600,
+            lineHeight: 0.98,
+            letterSpacing: "-0.02em",
+            color: "#f6efe0",
+            textAlign: "center",
+            maxWidth: 980,
+          }}
+        >
+          {appConfig.name}
+        </div>
+
+        <div
+          style={{
+            fontSize: 30,
+            color: "#ddd0b0",
+            letterSpacing: "0.06em",
+            textAlign: "center",
+            maxWidth: 900,
+            lineHeight: 1.3,
+          }}
+        >
+          Generate precise Vedic birth charts with a minimal astrology
+          workspace.
         </div>
       </div>
     </div>,

@@ -55,11 +55,23 @@ select {
 
 .font-display {
   font-family:
+    var(--font-instrument-serif),
+    "Instrument Serif",
     Iowan Old Style,
     Baskerville,
     "Times New Roman",
     serif;
   letter-spacing: 0;
+}
+
+.font-hero {
+  font-family:
+    var(--font-instrument-serif),
+    "Instrument Serif",
+    Iowan Old Style,
+    Baskerville,
+    "Times New Roman",
+    serif;
 }
 
 .app-surface {
@@ -78,6 +90,293 @@ select {
     linear-gradient(90deg, rgba(37, 34, 31, 0.035) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+/* ------------------------------------------------------------------ */
+/* Landing (cosmic theme, scoped to .landing-root)                     */
+/* ------------------------------------------------------------------ */
+
+.landing-root {
+  --background: #120e1d;
+  --paper: rgba(255, 253, 248, 0.05);
+  --ink: #f2ecdf;
+  --ink-muted: #a89e90;
+  --ink-faint: #7d7466;
+  --line: rgba(242, 236, 223, 0.12);
+  --line-strong: rgba(242, 236, 223, 0.24);
+  --accent: #d9a441;
+  --accent-strong: #f0be5d;
+  --accent-soft: rgba(217, 164, 65, 0.2);
+  background-color: #0b0814;
+  background-image:
+    radial-gradient(
+      ellipse 85% 60% at 50% -12%,
+      rgba(94, 56, 145, 0.38),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 88% 108%,
+      rgba(168, 84, 52, 0.2),
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 6% 96%,
+      rgba(41, 68, 122, 0.28),
+      transparent 60%
+    );
+  color: var(--ink);
+}
+
+.landing-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 55% 42% at 50% 52%,
+    rgba(217, 164, 65, 0.08),
+    transparent 75%
+  );
+  z-index: 0;
+}
+
+/* Popovers rendered by shared components use bg-white; re-skin on dark. */
+.landing-root .bg-white {
+  background-color: #171226;
+}
+
+.landing-popover {
+  background: #171226;
+  border: 1px solid rgba(242, 236, 223, 0.16);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.landing-star {
+  position: absolute;
+  border-radius: 9999px;
+  background: #fdf6e3;
+  box-shadow: 0 0 6px 1px rgba(253, 246, 227, 0.55);
+  animation: landing-twinkle 3s ease-in-out infinite;
+}
+
+.landing-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  animation: landing-drift 26s ease-in-out infinite alternate;
+}
+
+.landing-shooting-star {
+  position: absolute;
+  height: 1px;
+  width: 130px;
+  background: linear-gradient(90deg, rgba(253, 246, 227, 0.9), transparent);
+  border-radius: 9999px;
+  opacity: 0;
+  transform: rotate(-32deg);
+  animation: landing-shoot 9s ease-in 2s infinite;
+}
+
+.landing-reveal {
+  opacity: 0;
+  animation: landing-fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landing-headline {
+  background: linear-gradient(
+    100deg,
+    #f6efe0 20%,
+    #e8c375 40%,
+    #f6efe0 60%,
+    #cdbfa4 85%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: landing-shimmer 7s linear infinite;
+}
+
+.landing-reveal.landing-headline {
+  animation:
+    landing-fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    landing-shimmer 7s linear infinite;
+}
+
+.landing-subcopy {
+  text-wrap: pretty;
+}
+
+.landing-glass {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 253, 248, 0.07),
+    rgba(255, 253, 248, 0.02)
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(242, 236, 223, 0.14);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.landing-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(232, 195, 117, 0.2);
+  mask-image: linear-gradient(to bottom, black, transparent 68%);
+}
+
+.landing-panel::after {
+  content: "";
+  position: absolute;
+  inset: -30% 12% auto;
+  height: 120px;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse,
+    rgba(232, 195, 117, 0.15),
+    transparent 72%
+  );
+}
+
+.landing-input {
+  height: 3rem;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(242, 236, 223, 0.16);
+  background: rgba(255, 253, 248, 0.05);
+  padding-inline: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--ink);
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+  color-scheme: dark;
+}
+
+.landing-input::placeholder {
+  color: var(--ink-faint);
+}
+
+.landing-input:focus {
+  border-color: rgba(217, 164, 65, 0.65);
+  background: rgba(255, 253, 248, 0.08);
+  box-shadow: 0 0 0 3px rgba(217, 164, 65, 0.18);
+}
+
+.landing-cta {
+  background: linear-gradient(120deg, #c58f2e, #e8b856 45%, #c58f2e);
+  background-size: 200% auto;
+  color: #201505;
+  transition:
+    background-position 0.5s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+  box-shadow: 0 10px 34px rgba(217, 164, 65, 0.28);
+}
+
+.landing-cta:hover:not(:disabled) {
+  background-position: 100% center;
+  box-shadow: 0 14px 44px rgba(217, 164, 65, 0.4);
+  transform: translateY(-1px);
+}
+
+@keyframes landing-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+}
+
+@keyframes landing-drift {
+  from {
+    transform: translate3d(-4%, -3%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(5%, 6%, 0) scale(1.12);
+  }
+}
+
+@keyframes landing-shoot {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-32deg);
+  }
+  4% {
+    opacity: 1;
+  }
+  12% {
+    opacity: 0;
+    transform: translate3d(-340px, 210px, 0) rotate(-32deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-340px, 210px, 0) rotate(-32deg);
+  }
+}
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-shimmer {
+  to {
+    background-position: -220% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-star,
+  .landing-orb,
+  .landing-shooting-star,
+  .landing-headline {
+    animation: none;
+  }
+
+  .landing-shooting-star {
+    display: none;
+  }
+
+  .landing-reveal {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .landing-glass {
+    box-shadow:
+      0 16px 42px rgba(0, 0, 0, 0.48),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .landing-panel {
+    border-radius: 1rem;
+  }
 }
 
 .kundli-paper {
