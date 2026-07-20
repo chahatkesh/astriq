@@ -6,17 +6,22 @@ checked-in ephemeris fixtures. They are not network tests.
 ## Current Fixture
 
 `tests/fixtures/kundli/jpl-horizons-de441.json` contains a small NASA/JPL
-Horizons DE441 sample for the Delhi API smoke-test chart. The values use
-observer quantity 31:
+Horizons DE441 sample for the Delhi API smoke-test chart. Production calculates
+with DE442s via CSPICE; for modern dates DE442s agrees with DE441 within the
+fixture tolerances. The values use observer quantity 31:
 
 - geocentric Earth center: `500@399`
 - ephemeris type: `OBSERVER`
 - time type: `UT`
 - values: apparent tropical ecliptic-of-date longitude and latitude
 
-The test compares `planet.tropicalLongitude` and `planet.latitude` for Sun and
-Moon. It does not validate Lahiri ayanamsha, sidereal longitude, nakshatra,
-pada, houses, or divisional charts.
+The test invokes the native C++ engine through `generateBirthChart` and
+compares `planet.tropicalLongitude` and `planet.latitude` for Sun and Moon. It
+does not validate Lahiri ayanamsha, sidereal longitude, nakshatra, pada,
+houses, or divisional charts.
+
+Prerequisites: `pnpm engine:deps` and `pnpm build:engine` (covered by
+`pnpm test:unit`).
 
 ## Adding Reference Cases
 

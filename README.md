@@ -9,7 +9,7 @@ Astriq is a production Next.js app for Vedic birth chart (kundli) generation. Gu
 - Authenticated kundli workspace with named saved chart history
 - Paper-style chart results with direct single-page A4 PDF download
 - Configurable per-user generation quota (`MAX_CHARTS_PER_USER`)
-- C++ kundli engine with JPL SPICE ephemeris support (`KUNDLI_ENGINE_BACKEND=jpl_spice`)
+- Native C++17 kundli engine using NAIF CSPICE + JPL DE442s (`KUNDLI_ENGINE_BACKEND=jpl_spice`)
 - Multilingual UI strings and astrology glossary coverage
 
 ## Stack
@@ -30,7 +30,7 @@ pnpm secrets:decrypt          # writes .env from secrets/local.enc.yaml
 pnpm docker:dev               # local PostgreSQL
 pnpm db:generate
 pnpm db:migrate
-pnpm ephemeris:download       # JPL SPICE kernels when using jpl_spice
+pnpm engine:deps              # CSPICE toolkit + JPL DE442s kernels
 pnpm build:engine
 pnpm dev                      # or: pnpm dev:procs
 ```
@@ -82,6 +82,7 @@ Key runtime env values (see [.env.example](.env.example)):
 - `AUTH_SESSION_SECRET`
 - `MAX_CHARTS_PER_USER`
 - `KUNDLI_ENGINE_BACKEND=jpl_spice`
+- `KUNDLI_ENGINE_BIN` / `KUNDLI_SPICE_KERNEL_DIR`
 - `NEXT_PUBLIC_APP_NAME=Astriq`
 
 Encrypted local and production environment files live in [secrets/](secrets/). See [SOPS secret management](docs/setup/secrets/sops-secret-management.md).

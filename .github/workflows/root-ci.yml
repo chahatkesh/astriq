@@ -26,7 +26,7 @@ jobs:
   quality:
     name: Quality Gate
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
       - name: Checkout repository
@@ -41,8 +41,19 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: Cache CSPICE and JPL kernels
+        uses: actions/cache@v6
+        with:
+          path: |
+            services/astrology-engine/vendor
+            services/astrology-engine/assets
+          key: kundli-spice-${{ runner.os }}-${{ hashFiles('scripts/download-cspice.mjs', 'scripts/download-jpl-spice-assets.mjs') }}
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install C++ toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++
 
       - name: Generate Prisma client
         run: pnpm db:generate
@@ -61,15 +72,18 @@ jobs:
 
       - name: Test
         run: pnpm test:unit
+        env:
+          KUNDLI_SPICE_KERNEL_DIR: services/astrology-engine/assets/jpl
 
   build:
     name: Production Build
     needs: quality
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       APP_ENV: production
       NODE_ENV: production
+      KUNDLI_SPICE_KERNEL_DIR: services/astrology-engine/assets/jpl
 
     steps:
       - name: Checkout repository
@@ -82,6 +96,14 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: Cache CSPICE and JPL kernels
+        uses: actions/cache@v6
+        with:
+          path: |
+            services/astrology-engine/vendor
+            services/astrology-engine/assets
+          key: kundli-spice-${{ runner.os }}-${{ hashFiles('scripts/download-cspice.mjs', 'scripts/download-jpl-spice-assets.mjs') }}
+
       - name: Restore Next.js cache
         uses: actions/cache@v6
         with:
@@ -92,6 +114,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install C++ toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++
 
       - name: Generate Prisma client
         run: pnpm db:generate

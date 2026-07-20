@@ -14,9 +14,6 @@ importers:
       html2canvas:
         specifier: ^1.4.1
         version: 1.4.1
-      js-ephemeris:
-        specifier: ^0.0.2
-        version: 0.0.2
       jspdf:
         specifier: ^4.2.1
         version: 4.2.1
@@ -2187,9 +2184,6 @@ packages:
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
-
-  js-ephemeris@0.0.2:
-    resolution: {integrity: sha512-BGP9IzZMH48+m0WNGt8XD3ul7MvIdAUPMpbGLxn+WCFXLqXUdJSYMQRp33X/tMqHcuqiLBJfsrnEcxnY/weDgA==}
 
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
@@ -5306,8 +5300,6 @@ snapshots:
       set-function-name: 2.0.2
 
   jiti@2.7.0: {}
-
-  js-ephemeris@0.0.2: {}
 
   js-tokens@10.0.0: {}
 

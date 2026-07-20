@@ -1,11 +1,10 @@
-FROM node:24-alpine AS base
+FROM node:24-bookworm-slim AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV PNPM_VERSION=10.34.4
 
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /workspace
 
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
@@ -18,7 +17,9 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 WORKDIR /workspace
 
-RUN apk add --no-cache g++ make
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends g++ make ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=deps /workspace/node_modules ./node_modules
 COPY --from=deps /workspace/packages/database/node_modules ./packages/database/node_modules
@@ -40,8 +41,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV APP_ENV=production
 ENV DATABASE_URL=$DATABASE_URL
 ENV NEXT_PUBLIC_APP_NAME="Astriq"
+ENV KUNDLI_ENGINE_BACKEND=jpl_spice
+ENV KUNDLI_SPICE_KERNEL_DIR=/workspace/services/astrology-engine/assets/jpl
 
 RUN pnpm db:generate
+RUN pnpm engine:deps
 RUN pnpm build
 
 FROM base AS migrate
@@ -67,15 +71,28 @@ ENV APP_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV KUNDLI_ENGINE_BACKEND=jpl_spice
+ENV KUNDLI_ENGINE_BIN=/app/services/astrology-engine/bin/kundli-engine
+ENV KUNDLI_SPICE_KERNEL_DIR=/app/services/astrology-engine/assets/jpl
 
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs
-
-RUN mkdir .next && chown nextjs:nodejs .next
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends libstdc++6 ca-certificates \
+  && rm -rf /var/lib/apt/lists/* \
+  && groupadd --system --gid 1001 nodejs \
+  && useradd --system --uid 1001 --gid nodejs --home-dir /app --no-create-home nextjs \
+  && mkdir -p .next services/astrology-engine/bin services/astrology-engine/assets/jpl \
+  && chown -R nextjs:nodejs .next services
 
 COPY --from=builder --chown=nextjs:nodejs /workspace/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /workspace/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /workspace/services/astrology-engine/bin/kundli-engine ./services/astrology-engine/bin/kundli-engine
+COPY --from=builder --chown=nextjs:nodejs /workspace/services/astrology-engine/assets/jpl/naif0012.tls ./services/astrology-engine/assets/jpl/naif0012.tls
+COPY --from=builder --chown=nextjs:nodejs /workspace/services/astrology-engine/assets/jpl/de442s.bsp ./services/astrology-engine/assets/jpl/de442s.bsp
+
+RUN chmod 755 /app/services/astrology-engine/bin/kundli-engine \
+  && test -s /app/services/astrology-engine/bin/kundli-engine \
+  && test -s /app/services/astrology-engine/assets/jpl/naif0012.tls \
+  && test -s /app/services/astrology-engine/assets/jpl/de442s.bsp
 
 USER nextjs
 

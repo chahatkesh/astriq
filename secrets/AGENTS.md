@@ -24,6 +24,14 @@ Rules for encrypted environment files. Read after the root [AGENTS.md](../AGENTS
 
 The Make targets behind these scripts live in [Makefile](../Makefile). They set `SOPS_AGE_KEY_FILE=.age-key.txt` for you.
 
+## Engine path keys
+
+`KUNDLI_ENGINE_BACKEND`, `KUNDLI_ENGINE_BIN`, and `KUNDLI_SPICE_KERNEL_DIR` may
+appear in the encrypted env files for a complete runtime contract, but they are
+not credentials. Production Compose pins container-absolute values for these
+keys so chart generation stays correct even if a host-relative path is present
+in `.env.production`.
+
 ## Adding a new secret
 
 1. Classify the value first. Only credentials, signing/encryption material, private tokens, and similarly sensitive values belong here.

@@ -47,8 +47,10 @@ int main() {
   const kundli::BirthChart chart = kundli::calculateBirthChart(sampleInput());
   assert(chart.metadata.utcIso == "2000-01-01T12:00:00.000Z");
   assert(chart.metadata.engineBackend == "jpl_spice");
-  assert(chart.metadata.calculationProfile.id == "vedic-lahiri-jpl-de441-v1");
+  assert(chart.metadata.calculationProfile.id == "vedic-lahiri-jpl-de442s-v1");
   assert(chart.metadata.calculationProfile.precision == "reference");
+  assert(
+      chart.metadata.calculationProfile.ephemeris == "NASA/JPL DE442s SPK");
   assert(chart.metadata.calculationProfile.nodeModel == "Mean lunar nodes");
   assert(chart.metadata.ayanamsha == "lahiri");
   assert(chart.metadata.houseSystem == "whole_sign");

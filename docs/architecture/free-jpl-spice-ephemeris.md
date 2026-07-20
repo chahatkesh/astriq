@@ -1,6 +1,6 @@
 # Free JPL/SPICE Ephemeris Backend
 
-The production accuracy target is a free NASA/JPL SPICE-backed backend, not
+The production accuracy backend is a free NASA/JPL SPICE-backed C++ engine, not
 Swiss Ephemeris.
 
 ## Why This Backend
@@ -17,13 +17,21 @@ Swiss Ephemeris.
 Assets are intentionally not committed. Download them locally with:
 
 ```bash
+pnpm engine:deps
+```
+
+Or separately:
+
+```bash
 pnpm ephemeris:download
+pnpm cspice:download
 ```
 
 To verify the workflow without downloading kernels:
 
 ```bash
 node scripts/download-jpl-spice-assets.mjs --dry-run
+node scripts/download-cspice.mjs --dry-run
 ```
 
 This creates:
@@ -32,9 +40,11 @@ This creates:
 services/astrology-engine/assets/jpl/naif0012.tls
 services/astrology-engine/assets/jpl/de442s.bsp
 services/astrology-engine/assets/jpl/manifest.json
+services/astrology-engine/vendor/cspice/   # NAIF CSPICE toolkit
+services/astrology-engine/vendor/cspice-manifest.json
 ```
 
-`manifest.json` records source URLs, byte sizes, and SHA-256 hashes.
+`manifest.json` / `cspice-manifest.json` record source URLs and hashes.
 
 ## Backend Contract
 
@@ -48,38 +58,32 @@ The engine accepts:
 
 Supported values:
 
-- `jpl_spice`: the production backend using JPL DE441 planetary states.
+- `jpl_spice`: the production backend using JPL DE442s SPK via NAIF CSPICE.
 
 The app-level contract keeps `jpl_spice` as the only accepted backend so
 generation behavior is deterministic and versioned.
 
-## Target Calculation Profile
-
-The target profile should be:
+## Calculation Profile
 
 ```json
 {
   "id": "vedic-lahiri-jpl-de442s-v1",
   "precision": "reference",
   "ephemeris": "NASA/JPL DE442s SPK",
-  "planetPositionSource": "NAIF SPICE apparent geocentric states",
+  "planetPositionSource": "NAIF SPICE apparent geocentric states (CN+S), ecliptic of date",
   "ayanamshaModel": "Lahiri",
   "houseModel": "Whole sign from sidereal ascendant",
   "nodeModel": "Mean lunar nodes"
 }
 ```
 
-Use apparent geocentric positions with converged light-time and stellar
-aberration correction (`CN+S`) so the profile aligns with the JPL Horizons
-reference fixture style.
+Production flow:
 
-## Implementation Steps
-
-1. Keep the CLI JSON input/output contract stable.
-2. Link CSPICE, load `naif0012.tls` and `de442s.bsp`, and convert UTC to SPICE
-   ephemeris time.
-3. Compute apparent geocentric vectors for Sun, Moon, Mercury, Venus, Mars,
-   Jupiter, and Saturn.
-4. Convert vectors to ecliptic longitude and latitude.
-5. Apply Lahiri ayanamsha and existing sign, house, nakshatra, and pada logic.
-6. Expand JPL reference fixtures and tighten tolerances.
+1. TypeScript validates birth details and resolves IANA timezone offset.
+2. Node spawns `kundli-engine` with JSON on stdin.
+3. The CLI furnishes `naif0012.tls` and `de442s.bsp`, converts UTC to ET, and
+   computes apparent geocentric vectors for Sun, Moon, Mercury, Venus, Mars,
+   Jupiter, and Saturn (`spkpos` with `CN+S` in `J2000`, then ecliptic-of-date).
+4. C++ applies Lahiri ayanamsha and existing sign, house, nakshatra, and pada
+   logic (mean lunar nodes remain analytic).
+5. Chart JSON is returned on stdout and persisted by the app services.

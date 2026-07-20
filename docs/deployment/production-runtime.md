@@ -15,6 +15,22 @@ This repo tracks one deployed runtime: production.
 
 Production `DATABASE_URL` must reach the compose service hostname `postgres` (not `localhost`). Postgres is not published on the host network.
 
+## Kundli engine in production
+
+The app image builds and ships:
+
+- `services/astrology-engine/bin/kundli-engine` (CSPICE-linked C++ CLI)
+- `services/astrology-engine/assets/jpl/{naif0012.tls,de442s.bsp}`
+
+Compose pins non-secret engine paths so host-relative values from
+`.env.production` cannot break chart generation:
+
+- `KUNDLI_ENGINE_BACKEND=jpl_spice`
+- `KUNDLI_ENGINE_BIN=/app/services/astrology-engine/bin/kundli-engine`
+- `KUNDLI_SPICE_KERNEL_DIR=/app/services/astrology-engine/assets/jpl`
+
+Chart calculation is server-side only (no offline/browser engine path).
+
 ## No staging
 
 Do not add `staging` env values, compose files, workflows, or scripts. Use local development and production as the only supported runtime classes unless this policy changes in a decision record.

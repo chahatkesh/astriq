@@ -28,11 +28,13 @@ describe("generateBirthChart", () => {
     expect(chart.metadata.ayanamsha).toBe("lahiri");
     expect(chart.metadata.houseSystem).toBe("whole_sign");
     expect(chart.metadata.calculationProfile).toMatchObject({
-      id: "vedic-lahiri-jpl-de441-v1",
+      id: "vedic-lahiri-jpl-de442s-v1",
       precision: "reference",
-      ephemeris: "NASA/JPL DE441 via js-ephemeris",
+      ephemeris: "NASA/JPL DE442s SPK",
       nodeModel: "Mean lunar nodes",
     });
+    expect(chart.metadata.ephemeris).toBe("NASA/JPL DE442s SPK");
+    expect(chart.metadata.engineVersion).toBe("1.0.0");
     expect(chart.houses).toHaveLength(12);
     expect(chart.planets.map((planet) => planet.key)).toEqual([
       "sun",

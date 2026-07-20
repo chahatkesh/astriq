@@ -68,6 +68,14 @@ secrets/production.enc.yaml     # encrypted production env
 .env.production                 # generated production env, gitignored
 ```
 
+## Non-secret engine paths
+
+`KUNDLI_ENGINE_BACKEND`, `KUNDLI_ENGINE_BIN`, and `KUNDLI_SPICE_KERNEL_DIR` are
+kept in the encrypted env files for a complete runtime contract, but they are
+not credentials. Production Compose also pins the container-absolute engine
+paths so chart generation cannot break if a host-relative value is decrypted
+into `.env.production`.
+
 ## Initializing Secret Files
 
 After generating `.age-key.txt` and updating `.sops.yaml`, create or edit encrypted files with:

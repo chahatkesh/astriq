@@ -44,5 +44,18 @@ Auth and generation quota defaults are also defined in
 - `AUTH_SESSION_SECRET`
 - `MAX_CHARTS_PER_USER`
 - `KUNDLI_ENGINE_BACKEND=jpl_spice`
+- `KUNDLI_ENGINE_BIN`
+- `KUNDLI_SPICE_KERNEL_DIR`
+
+## Kundli engine (C++ / SPICE)
+
+Production chart calculation uses the native CLI under
+`services/astrology-engine`, linked against NAIF CSPICE and JPL DE442s kernels.
+
+```bash
+pnpm engine:deps    # downloads CSPICE + kernels into gitignored paths
+pnpm build:engine
+pnpm test:engine
+```
 
 The Prisma schema, migrations, seed, and client boundary live in [packages/database/](../../packages/database/). App and service code should import `db` from [lib/db.ts](../../lib/db.ts).
